@@ -5,14 +5,19 @@ extends RefCounted
 ## Gare stockée en triplets (destination, capacité, chargés), du plus ancien au plus récent.
 
 const DEFAULT_MAX_NODES: int = 2000000
-const MAX_VEHICLES: int = 62
+const MAX_VEHICLES: int = 80
+## Masque de véhicules sur deux entiers : `1 << 63` changerait le signe.
+const WORD_BITS: int = 62
 const FIELDS: int = 3
 const FIELD_CAPACITY: int = 1
 const FIELD_LOADED: int = 2
 
 var _vehicle_dests: PackedInt32Array = PackedInt32Array()
 var _vehicle_capacities: PackedInt32Array = PackedInt32Array()
-var _blocker_masks: PackedInt64Array = PackedInt64Array()
+var _bits_low: PackedInt64Array = PackedInt64Array()
+var _bits_high: PackedInt64Array = PackedInt64Array()
+var _blockers_low: PackedInt64Array = PackedInt64Array()
+var _blockers_high: PackedInt64Array = PackedInt64Array()
 var _block_dests: PackedInt32Array = PackedInt32Array()
 var _block_counts: PackedInt32Array = PackedInt32Array()
 var _dest_count: int = 0
@@ -24,6 +29,7 @@ var _slots: int = 0
 var _aborted: bool = false
 
 
+## La marge se calcule sans booster : voir BoosterSolver pour la métrique avec boosters.
 static func solve(level: LevelData, slots: int, max_nodes: int = DEFAULT_MAX_NODES) -> SolverResult:
 	assert(level.vehicles.size() <= MAX_VEHICLES)
 	var solver: Solver = Solver.new(level, max_nodes)
@@ -53,14 +59,27 @@ func _init(level: LevelData, max_nodes: int) -> void:
 	for vehicle: LevelVehicle in level.vehicles:
 		_vehicle_dests.append(_dest_id(dest_ids, vehicle.dest))
 		_vehicle_capacities.append(vehicle.capacity)
-		var mask: int = 0
+		_bits_low.append(_low_bit(vehicle.id))
+		_bits_high.append(_high_bit(vehicle.id))
+		var low: int = 0
+		var high: int = 0
 		for blocker: int in board.blockers_of(vehicle.id):
-			mask |= 1 << blocker
-		_blocker_masks.append(mask)
+			low |= _low_bit(blocker)
+			high |= _high_bit(blocker)
+		_blockers_low.append(low)
+		_blockers_high.append(high)
 	for block: QueueBlock in level.queue:
 		_block_dests.append(_dest_id(dest_ids, block.dest))
 		_block_counts.append(block.count)
 	_dest_count = dest_ids.size()
+
+
+static func _low_bit(id: int) -> int:
+	return 1 << id if id < WORD_BITS else 0
+
+
+static func _high_bit(id: int) -> int:
+	return 1 << (id - WORD_BITS) if id >= WORD_BITS else 0
 
 
 func _dest_id(dest_ids: Dictionary[String, int], dest: String) -> int:
@@ -85,17 +104,21 @@ func _solvable_with(slots: int) -> bool:
 	_slots = slots
 	_failed_states.clear()
 	_path = PackedInt32Array()
-	var all_vehicles: int = (1 << _vehicle_dests.size()) - 1
+	var all_low: int = 0
+	var all_high: int = 0
+	for vehicle_id: int in _vehicle_dests.size():
+		all_low |= _bits_low[vehicle_id]
+		all_high |= _bits_high[vehicle_id]
 	var first_count: int = _block_counts[0] if not _block_counts.is_empty() else 0
-	return _search(all_vehicles, 0, first_count, PackedInt32Array())
+	return _search(all_low, all_high, 0, first_count, PackedInt32Array())
 
 
-func _search(mask: int, block_index: int, block_left: int, parked: PackedInt32Array) -> bool:
+func _search(low: int, high: int, block_index: int, block_left: int, parked: PackedInt32Array) -> bool:
 	if block_index >= _block_dests.size():
 		return true
 	if parked.size() >= _slots * FIELDS:
 		return false
-	var key: String = _state_key(mask, block_index, block_left, parked)
+	var key: String = _state_key(low, high, block_index, block_left, parked)
 	if _failed_states.has(key):
 		return false
 	_failed_states[key] = true
@@ -103,9 +126,9 @@ func _search(mask: int, block_index: int, block_left: int, parked: PackedInt32Ar
 	if _nodes > _max_nodes:
 		_aborted = true
 		return false
-	for vehicle_id: int in _candidates(mask, _block_dests[block_index]):
+	for vehicle_id: int in _candidates(low, high, _block_dests[block_index]):
 		_path.append(vehicle_id)
-		if _try_vehicle(vehicle_id, mask, block_index, block_left, parked):
+		if _try_vehicle(vehicle_id, low, high, block_index, block_left, parked):
 			return true
 		_path.resize(_path.size() - 1)
 		if _aborted:
@@ -114,11 +137,13 @@ func _search(mask: int, block_index: int, block_left: int, parked: PackedInt32Ar
 
 
 ## Véhicules libres, ceux de la destination en tête d'abord.
-func _candidates(mask: int, head_dest: int) -> PackedInt32Array:
+func _candidates(low: int, high: int, head_dest: int) -> PackedInt32Array:
 	var matching: PackedInt32Array = PackedInt32Array()
 	var others: PackedInt32Array = PackedInt32Array()
 	for vehicle_id: int in _vehicle_dests.size():
-		if mask & (1 << vehicle_id) == 0 or mask & _blocker_masks[vehicle_id] != 0:
+		if low & _bits_low[vehicle_id] == 0 and high & _bits_high[vehicle_id] == 0:
+			continue
+		if low & _blockers_low[vehicle_id] != 0 or high & _blockers_high[vehicle_id] != 0:
 			continue
 		if _vehicle_dests[vehicle_id] == head_dest:
 			matching.append(vehicle_id)
@@ -128,7 +153,7 @@ func _candidates(mask: int, head_dest: int) -> PackedInt32Array:
 	return matching
 
 
-func _try_vehicle(vehicle_id: int, mask: int, block_index: int, block_left: int, parked: PackedInt32Array) -> bool:
+func _try_vehicle(vehicle_id: int, low: int, high: int, block_index: int, block_left: int, parked: PackedInt32Array) -> bool:
 	var next: PackedInt32Array = parked.duplicate()
 	next.append(_vehicle_dests[vehicle_id])
 	next.append(_vehicle_capacities[vehicle_id])
@@ -147,7 +172,7 @@ func _try_vehicle(vehicle_id: int, mask: int, block_index: int, block_left: int,
 		if left == 0:
 			index += 1
 			left = _block_counts[index] if index < _block_counts.size() else 0
-	return _search(mask & ~(1 << vehicle_id), index, left, next)
+	return _search(low & ~_bits_low[vehicle_id], high & ~_bits_high[vehicle_id], index, left, next)
 
 
 func _oldest_for(parked: PackedInt32Array, dest: int) -> int:
@@ -158,8 +183,8 @@ func _oldest_for(parked: PackedInt32Array, dest: int) -> int:
 
 
 ## L'ordre d'arrivée compte à l'intérieur d'une destination, pas entre destinations.
-func _state_key(mask: int, block_index: int, block_left: int, parked: PackedInt32Array) -> String:
-	var key: String = "%d:%d:%d" % [mask, block_index, block_left]
+func _state_key(low: int, high: int, block_index: int, block_left: int, parked: PackedInt32Array) -> String:
+	var key: String = "%d:%d:%d:%d" % [low, high, block_index, block_left]
 	for dest: int in _dest_count:
 		for at: int in range(0, parked.size(), FIELDS):
 			if parked[at] == dest:

@@ -2,7 +2,8 @@ class_name GameEvent
 extends RefCounted
 ## Événement renvoyé par GameRules et rejoué par la présentation.
 
-enum Type { MOVED, BLOCKED, BOARDED, DEPARTED, WON, LOST }
+## BLOCKED : choc d'un tap. RESCUE_NEEDED : la partie entre dans Status.BLOCKED.
+enum Type { MOVED, BLOCKED, BOARDED, DEPARTED, WON, LOST, FLEW, QUEUE_REORDERED, RESCUE_NEEDED }
 
 var type: Type
 var vehicle_id: int = -1
@@ -11,6 +12,7 @@ var slot: int = -1
 var count: int = 0
 var loaded: int = 0
 var dest: String = ""
+var blocks: Array[QueueBlock] = []
 
 
 func _init(event_type: Type) -> void:
@@ -21,6 +23,19 @@ static func moved(id: int, slot_index: int) -> GameEvent:
 	var event: GameEvent = GameEvent.new(Type.MOVED)
 	event.vehicle_id = id
 	event.slot = slot_index
+	return event
+
+
+static func flew(id: int, slot_index: int) -> GameEvent:
+	var event: GameEvent = GameEvent.new(Type.FLEW)
+	event.vehicle_id = id
+	event.slot = slot_index
+	return event
+
+
+static func queue_reordered(new_blocks: Array[QueueBlock]) -> GameEvent:
+	var event: GameEvent = GameEvent.new(Type.QUEUE_REORDERED)
+	event.blocks = new_blocks
 	return event
 
 

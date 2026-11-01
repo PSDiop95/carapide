@@ -16,6 +16,12 @@ func _init(id: int, vehicle_dest: String, vehicle_capacity: int, slot_index: int
 	slot = slot_index
 
 
+func copy() -> ParkedVehicle:
+	var clone: ParkedVehicle = ParkedVehicle.new(vehicle_id, dest, capacity, slot)
+	clone.loaded = loaded
+	return clone
+
+
 func free_seats() -> int:
 	return capacity - loaded
 

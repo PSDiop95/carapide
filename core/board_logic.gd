@@ -8,22 +8,48 @@ const NO_VEHICLE: int = -1
 var _boxes: Array[OrientedBox] = []
 ## Pour chaque véhicule : ids dans son couloir, du plus proche au plus lointain.
 var _blockers: Array[PackedInt32Array] = []
-var _remaining: Array[bool] = []
+var _remaining: PackedByteArray = PackedByteArray()
 var _remaining_count: int = 0
 
 
-func _init(level: LevelData) -> void:
+## Sans niveau : coquille remplie par copy().
+func _init(level: LevelData = null) -> void:
+	if level == null:
+		return
 	for vehicle: LevelVehicle in level.vehicles:
 		_boxes.append(OrientedBox.from_vehicle(vehicle))
-		_remaining.append(true)
+		_remaining.append(1)
 	_remaining_count = _boxes.size()
 	var reach: float = level.board_width + level.board_height
 	for id: int in _boxes.size():
 		_blockers.append(_compute_blockers(id, reach))
 
 
+## La géométrie est partagée : elle est figée.
+func copy() -> BoardLogic:
+	var clone: BoardLogic = BoardLogic.new()
+	clone._boxes = _boxes
+	clone._blockers = _blockers
+	clone._remaining = _remaining.duplicate()
+	clone._remaining_count = _remaining_count
+	return clone
+
+
 func has_vehicle(vehicle_id: int) -> bool:
-	return vehicle_id >= 0 and vehicle_id < _remaining.size() and _remaining[vehicle_id]
+	return vehicle_id >= 0 and vehicle_id < _remaining.size() and _remaining[vehicle_id] == 1
+
+
+func state_key() -> String:
+	return _remaining.hex_encode()
+
+
+## Véhicules encore dans le bouchon, par id croissant.
+func remaining_vehicles() -> PackedInt32Array:
+	var ids: PackedInt32Array = PackedInt32Array()
+	for id: int in _remaining.size():
+		if _remaining[id] == 1:
+			ids.append(id)
+	return ids
 
 
 func remaining_count() -> int:
@@ -36,14 +62,14 @@ func can_exit(vehicle_id: int) -> bool:
 
 func first_blocker(vehicle_id: int) -> int:
 	for blocker_id: int in _blockers[vehicle_id]:
-		if _remaining[blocker_id]:
+		if _remaining[blocker_id] == 1:
 			return blocker_id
 	return NO_VEHICLE
 
 
 func remove(vehicle_id: int) -> void:
 	if has_vehicle(vehicle_id):
-		_remaining[vehicle_id] = false
+		_remaining[vehicle_id] = 0
 		_remaining_count -= 1
 
 
@@ -79,7 +105,7 @@ func _nearest_at(x: float, y: float, tolerance: float) -> int:
 	var best_distance: float = INF
 	for id: int in _boxes.size():
 		var box: OrientedBox = _boxes[id]
-		if not _remaining[id] or not box.contains_point(x, y, tolerance):
+		if _remaining[id] == 0 or not box.contains_point(x, y, tolerance):
 			continue
 		var distance: float = Vector2(x - box.center_x, y - box.center_y).length_squared()
 		if distance < best_distance:

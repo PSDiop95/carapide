@@ -1,0 +1,16 @@
+class_name BoosterAccess
+extends RefCounted
+## Ce que le joueur peut obtenir : le core sait ainsi distinguer BLOCKED de LOST,
+## sans connaître ni pièces ni publicité. Par défaut : aucun booster.
+
+enum Kind { COXEUR, APPRENTI }
+
+var _unlimited: bool = false
+
+
+func _init(unlimited: bool = false) -> void:
+	_unlimited = unlimited
+
+
+func can_obtain(_kind: Kind) -> bool:
+	return _unlimited
