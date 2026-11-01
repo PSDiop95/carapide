@@ -8,7 +8,7 @@ var save: SaveService = FileSaveService.new(SAVE_PATH)
 var analytics: AnalyticsService = CsvAnalyticsService.new(PLAYTEST_CSV_PATH)
 var haptics: HapticsService = _make_haptics()
 var wallet: WalletService = SavedWalletService.new(save, analytics)
-var ads: AdsService = AdsService.new()
+var ads: AdsService = CappedAdsService.new(save, EconomyConfig.load_default().rewarded_ads_per_day)
 var iap: IapService = IapService.new()
 
 

@@ -36,6 +36,7 @@ func _ready() -> void:
 		DirAccess.remove_absolute(SAVE_PATH)
 	Services.save = FileSaveService.new(SAVE_PATH)
 	Services.wallet = SavedWalletService.new(Services.save)
+	Services.ads = CappedAdsService.new(Services.save, EconomyConfig.load_default().rewarded_ads_per_day)
 	Services.analytics = AnalyticsService.new()
 	Features.force_boosters(Services.save, _boosters)
 	var scene: PackedScene = load("res://game/main.tscn")
@@ -74,6 +75,8 @@ func _run() -> void:
 		_capture("level_%02d_end" % number)
 		await _check_coins_after_win(number)
 		await _click_button()
+		if _boosters and number == count:
+			await _check_rewards()
 		await _enter_level_from_hub()
 	_expect(LevelProgress.current_level(Services.save, count) == 1, "Progression non revenue au niveau 1")
 	_check_coins_after_relaunch()
@@ -108,6 +111,56 @@ func _enter_level_from_hub() -> void:
 	_expect(not _main.hub.visible and _main.view != null, "Jouer n'a pas lancé le niveau")
 
 
+## Fin du parcours, depuis le hub : Station (gratuit puis pub), Roue (tour gratuit gagné, puis pub).
+func _check_rewards() -> void:
+	await _frames(SETTLE_FRAMES)
+	Engine.time_scale = 1.0
+	var flow: RewardsFlow = _main.get_rewards()
+	_expect(_main.hub.station_dot.visible, "Point rouge absent : la Station est disponible")
+	await _click(_main.hub.station_button.get_global_rect().get_center())
+	await _frames(SETTLE_FRAMES)
+	_expect(flow.station_panel.visible, "Station non ouverte")
+	_capture("station")
+	var before: int = Services.wallet.balance()
+	await _click(flow.station_panel.claim_button.get_global_rect().get_center())
+	_expect(Services.wallet.balance() == before + 15, "Station : palier gratuit non crédité")
+	await _frames(SETTLE_FRAMES)
+	await _click(flow.station_panel.claim_button.get_global_rect().get_center())
+	await _wait_until_enabled(flow.station_panel.close_button)
+	_expect(Services.wallet.balance() == before + 35, "Station : palier par pub non crédité")
+	await _click(flow.station_panel.close_button.get_global_rect().get_center())
+	await _frames(SETTLE_FRAMES)
+	await _check_wheel(flow)
+	_expected_coins = Services.wallet.balance()
+	Engine.time_scale = TIME_SCALE
+
+
+func _check_wheel(flow: RewardsFlow) -> void:
+	await _click(_main.hub.wheel_button.get_global_rect().get_center())
+	await _frames(SETTLE_FRAMES)
+	_expect(flow.wheel_panel.visible, "Roue non ouverte")
+	_expect(flow.wheel.free_spins() == 1, "Roue : tour gratuit attendu après 15 victoires")
+	await _click(flow.wheel_panel.spin_button.get_global_rect().get_center())
+	_expect(flow.wheel_panel.is_spinning(), "Roue : le disque ne tourne pas")
+	_expect(Services.analytics.logged_events.has("wheel_spin"), "Roue : tirage non journalisé avant la fin de l'animation")
+	await _frames(SETTLE_FRAMES)
+	_capture("wheel_spinning")
+	await _wait_until_enabled(flow.wheel_panel.close_button)
+	await _frames(SETTLE_FRAMES)
+	_capture("wheel_result")
+	_expect(not flow.wheel_panel.result_label.text.is_empty(), "Roue : résultat non affiché")
+	await _click(flow.wheel_panel.close_button.get_global_rect().get_center())
+	await _frames(SETTLE_FRAMES)
+
+
+func _wait_until_enabled(button: Button) -> void:
+	for _frame: int in MAX_WAIT_FRAMES:
+		if not button.disabled:
+			return
+		await get_tree().process_frame
+	_expect(false, "Écran resté occupé : %s" % button.text)
+
+
 func _check_coins_after_relaunch() -> void:
 	var reopened: FileSaveService = FileSaveService.new(SAVE_PATH)
 	var wallet: SavedWalletService = SavedWalletService.new(reopened)
@@ -118,7 +171,7 @@ func _check_coins_after_relaunch() -> void:
 	var inventory: BoosterInventory = BoosterInventory.new(config, reopened, wallet, AdsService.new())
 	inventory.enter_level(LevelCatalog.level_paths().size())
 	print("Après relance : %d pièces, stock Coxeur %d, stock Apprenti %d" % [wallet.balance(), inventory.stock(BoosterAccess.Kind.COXEUR), inventory.stock(BoosterAccess.Kind.APPRENTI)])
-	_expect(inventory.stock(BoosterAccess.Kind.APPRENTI) == config.gift(BoosterAccess.Kind.APPRENTI) - 1, "Stock Apprenti incohérent après relance")
+	_expect(inventory.stock(BoosterAccess.Kind.APPRENTI) >= config.gift(BoosterAccess.Kind.APPRENTI) - 1, "Stock Apprenti incohérent après relance")
 
 
 func _flow() -> BoosterFlow:

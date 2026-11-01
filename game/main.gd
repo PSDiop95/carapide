@@ -20,6 +20,7 @@ var _was_lost: bool = false
 var _telemetry: LevelTelemetry
 var _inventory: BoosterInventory = null
 var _flow: BoosterFlow = null
+var _rewards: RewardsFlow = null
 var _victory_coins: int = 0
 var _restart_after_loss: bool = false
 var _preloader: LevelPreloader
@@ -126,6 +127,8 @@ func _show_victory() -> void:
 	var was_last: bool = LevelProgress.is_last(_level_number, _paths.size())
 	_next_level_number = LevelProgress.record_win(Services.save, _level_number, _paths.size())
 	_telemetry.level_won(Time.get_ticks_msec())
+	if _rewards != null:
+		_rewards.wheel.record_win()
 	Events.level_won.emit(current_level.id)
 	if was_last:
 		hud.show_victory("ALL_DONE_TITLE", "REPLAY_BUTTON")
@@ -183,6 +186,7 @@ func prepare_for_measure() -> void:
 	if _inventory != null:
 		for kind: BoosterAccess.Kind in BoosterConfig.KIND_KEYS:
 			_inventory.mark_tutorial_done(kind)
+		_rewards.prepare_for_measure()
 
 
 func jump_to_level(level_number: int) -> void:
@@ -194,8 +198,9 @@ func jump_to_level(level_number: int) -> void:
 func measure_step(effect: String) -> void:
 	_measure_steps += 1
 	if hub.visible:
-		_on_play_pressed()
-	elif effect == "hub" and _measure_steps % HUB_MEASURE_PERIOD == 0:
+		if effect != "rewards" or not _rewards.measure_step():
+			_on_play_pressed()
+	elif (effect == "hub" or effect == "rewards") and _measure_steps % HUB_MEASURE_PERIOD == 0:
 		show_hub()
 	elif hud.is_result_visible():
 		_was_lost = false
@@ -217,6 +222,10 @@ func get_inventory() -> BoosterInventory:
 	return _inventory
 
 
+func get_rewards() -> RewardsFlow:
+	return _rewards
+
+
 ## Rejoue le niveau courant, sans passer par l'écran de fin (outils de vérification).
 func reload_current_level() -> void:
 	_start_level(_level_number)
@@ -230,6 +239,7 @@ func _on_new_tester_requested() -> void:
 	_next_level_number = LevelProgress.reset(Services.save)
 	if _inventory != null:
 		_inventory.reset()
+		_rewards.reset()
 	_was_lost = false
 	_start_level(_next_level_number)
 
@@ -246,6 +256,9 @@ func _apply_boosters_flag() -> void:
 	if _flow != null:
 		_flow.queue_free()
 		_flow = null
+	if _rewards != null:
+		_rewards.queue_free()
+		_rewards = null
 	_inventory = null
 	if Features.boosters_enabled(Services.save):
 		_inventory = BoosterInventory.new(BoosterConfig.load_default(), Services.save, Services.wallet, Services.ads)
@@ -255,6 +268,10 @@ func _apply_boosters_flag() -> void:
 		_flow.booster_used.connect(_on_booster_used)
 		_flow.level_blocked.connect(_on_level_blocked)
 		_flow.restart_requested.connect(_on_restart_requested)
+		_rewards = RewardsFlow.new()
+		add_child(_rewards)
+		_rewards.setup(hub, _config, _inventory, Services.ads, Services.save, Services.wallet, Services.analytics)
+	hub.set_rewards_enabled(_inventory != null)
 	_on_balance_changed(Services.wallet.balance())
 
 

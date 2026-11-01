@@ -72,6 +72,11 @@ func pay(kind: BoosterAccess.Kind) -> bool:
 	return false
 
 
+## Stock offert par la Roue : indépendant du déblocage, utilisable une fois le booster débloqué.
+func grant(kind: BoosterAccess.Kind, count: int) -> void:
+	_save.set_int(_key(STOCK_KEY, kind), stock(kind) + count)
+
+
 func needs_tutorial(kind: BoosterAccess.Kind) -> bool:
 	return is_unlocked(kind) and _save.get_int(_key(TUTORIAL_KEY, kind), 0) == 0
 

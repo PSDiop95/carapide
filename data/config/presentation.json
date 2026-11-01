@@ -32,5 +32,7 @@
   "hub_queue_bob": 6.0,
   "victory_cheer_height": 36.0,
   "victory_cheer_speed": 6.0,
-  "victory_cheer_swing": 0.9
+  "victory_cheer_swing": 0.9,
+  "wheel_spin_seconds": 2.5,
+  "wheel_spin_turns": 5
 }

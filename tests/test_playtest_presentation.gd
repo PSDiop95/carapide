@@ -244,7 +244,7 @@ func test_csv_appends_rows_across_instances() -> void:
 	var lines: PackedStringArray = second.csv_text().strip_edges().split("\n")
 	assert_eq(lines[0], CsvAnalyticsService.HEADER)
 	assert_string_starts_with(lines[1], "3,")
-	assert_string_ends_with(lines[2], ",level_fail,4,4,yoff,7,,12.5,,,,")
+	assert_string_ends_with(lines[2], ",level_fail,4,4,yoff,7,,12.5,,,,,")
 	DirAccess.remove_absolute(CSV_PATH)
 
 

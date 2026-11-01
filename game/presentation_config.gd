@@ -39,6 +39,8 @@ var hub_queue_bob: float = 0.0
 var victory_cheer_height: float = 0.0
 var victory_cheer_speed: float = 0.0
 var victory_cheer_swing: float = 0.0
+var wheel_spin_seconds: float = 0.0
+var wheel_spin_turns: int = 0
 var dest_colors: Dictionary[String, Color] = {}
 var dest_pictos: Dictionary[String, String] = {}
 var dest_name_keys: Dictionary[String, String] = {}
@@ -81,6 +83,8 @@ static func load_default() -> PresentationConfig:
 	config.victory_cheer_height = raw["victory_cheer_height"]
 	config.victory_cheer_speed = raw["victory_cheer_speed"]
 	config.victory_cheer_swing = raw["victory_cheer_swing"]
+	config.wheel_spin_seconds = raw["wheel_spin_seconds"]
+	config.wheel_spin_turns = _read_int(raw, "wheel_spin_turns")
 	config._load_destinations()
 	return config
 

@@ -82,6 +82,12 @@ func set_station_ready(ready_now: bool) -> void:
 	station_dot.visible = ready_now
 
 
+## Boosters désactivés (playtest) : ni Station ni Roue, leurs gains n'auraient aucun usage.
+func set_rewards_enabled(enabled: bool) -> void:
+	station_button.visible = enabled
+	wheel_button.visible = enabled
+
+
 ## Message court : ce qui n'est pas encore disponible.
 func show_hint(text: String) -> void:
 	hint_label.text = text
