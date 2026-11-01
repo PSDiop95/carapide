@@ -5,7 +5,7 @@ extends RefCounted
 
 const SLOT_SPACING: float = 1.75
 const STATION_Z: float = -3.0
-const QUEUE_Z: float = -6.0
+const QUEUE_Z: float = -7.2
 const QUEUE_CELL: float = 0.5
 const QUEUE_ROWS: int = 4
 const QUEUE_ROW_PITCH: float = 0.75
@@ -13,16 +13,33 @@ const HEAD_MARKER_OFFSET: float = 0.6
 const SCENE_MARGIN: float = 1.0
 const MIN_SCENE_WIDTH: float = 8.0
 const ROOF_HEIGHT: float = 0.6
+## Bande réservée en haut de scène aux libellés et pancartes de la file.
+const HUD_RESERVED_Z: float = 3.2
+## Rangée Garage : entre la file et la gare.
+const GARAGE_Z: float = -6.5
+const GARAGE_PITCH: float = 1.3
+const GARAGE_LIFT: float = 0.1
+## La gare garde sa largeur de départ : les places s'y resserrent, la file et le cadrage ne bougent pas.
+const BASE_COLUMNS_MIN: int = 5
+## Bande réservée en bas de scène à la barre de boosters.
+const BOOSTER_BAR_Z: float = 3.0
 
 var board_width: float
 var board_height: float
 var slots: int
+var coxeur_visible: bool
+var booster_bar_visible: bool
+
+var _base_columns: int
 
 
-func _init(level: LevelData) -> void:
+func _init(level: LevelData, has_coxeur_slot: bool = false, has_booster_bar: bool = false) -> void:
 	board_width = level.board_width
 	board_height = level.board_height
 	slots = level.slots
+	coxeur_visible = has_coxeur_slot
+	booster_bar_visible = has_booster_bar
+	_base_columns = maxi(_slot_columns(), BASE_COLUMNS_MIN if has_booster_bar else 0)
 
 
 func board_to_world(x: float, y: float) -> Vector3:
@@ -34,11 +51,35 @@ func world_to_board(point: Vector3) -> Vector2:
 
 
 func slot_world(slot: int) -> Vector3:
-	return Vector3((float(slot) - float(slots - 1) * 0.5) * SLOT_SPACING, 0.0, STATION_Z)
+	return Vector3((float(slot) - float(_slot_columns() - 1) * 0.5) * slot_spacing(), 0.0, STATION_Z)
+
+
+func slot_spacing() -> float:
+	return minf(SLOT_SPACING, float(_base_columns) * SLOT_SPACING / float(_slot_columns()))
+
+
+## Place du rang `index` dans la rangée Garage de `count` véhicules, centrée et sans limite.
+func garage_world(index: int, count: int) -> Vector3:
+	var pitch: float = minf(GARAGE_PITCH, (scene_width() - SCENE_MARGIN) / float(maxi(count, 1)))
+	return Vector3((float(index) - float(count - 1) * 0.5) * pitch, GARAGE_LIFT, GARAGE_Z)
+
+
+## Le Garage ajoute une place.
+func set_slots(slot_count: int) -> void:
+	slots = slot_count
+
+
+## Place Coxeur : juste à droite des places normales.
+func coxeur_slot() -> int:
+	return slots
+
+
+func _slot_columns() -> int:
+	return slots + 1 if coxeur_visible else slots
 
 
 func scene_width() -> float:
-	var station_width: float = float(slots) * SLOT_SPACING
+	var station_width: float = float(_base_columns) * SLOT_SPACING
 	return maxf(maxf(board_width, station_width), MIN_SCENE_WIDTH) + SCENE_MARGIN
 
 
@@ -67,22 +108,8 @@ func head_marker_world() -> Vector3:
 
 
 func top_z() -> float:
-	return QUEUE_Z - float(QUEUE_ROWS) * QUEUE_ROW_PITCH - SCENE_MARGIN
+	return QUEUE_Z - float(QUEUE_ROWS) * QUEUE_ROW_PITCH - SCENE_MARGIN - HUD_RESERVED_Z
 
 
 func bottom_z() -> float:
-	return board_height + SCENE_MARGIN
-
-
-## Point du bord du plateau atteint en suivant la flèche, avant-train dehors.
-func exit_point(vehicle: LevelVehicle) -> Vector3:
-	var box: OrientedBox = OrientedBox.from_vehicle(vehicle)
-	var to_edge: float = INF
-	if not is_zero_approx(box.dir_x):
-		var edge_x: float = board_width if box.dir_x > 0.0 else 0.0
-		to_edge = minf(to_edge, (edge_x - vehicle.pos_x) / box.dir_x)
-	if not is_zero_approx(box.dir_y):
-		var edge_y: float = board_height if box.dir_y > 0.0 else 0.0
-		to_edge = minf(to_edge, (edge_y - vehicle.pos_y) / box.dir_y)
-	var travel: float = to_edge + vehicle.length * 0.5
-	return board_to_world(vehicle.pos_x + box.dir_x * travel, vehicle.pos_y + box.dir_y * travel)
+	return board_height + SCENE_MARGIN + (BOOSTER_BAR_Z if booster_bar_visible else 0.0)

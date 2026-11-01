@@ -1,0 +1,28 @@
+{
+  "boosters": {
+    "coxeur": { "price": 80, "gift": 3 },
+    "apprenti": { "price": 120, "gift": 3 },
+    "dioule": { "price": 120, "gift": 3 },
+    "garage": { "price": 900, "gift": 0 }
+  },
+  "garage_max_uses": 2,
+  "victory_coins": 20,
+  "victory_ad_multiplier": 2,
+  "station": {
+    "tiers": [15, 20, 50, 100],
+    "recharge_hours": 4
+  },
+  "wheel": {
+    "wins_per_free_spin": 10,
+    "ad_spins_per_day": 3,
+    "cells": [
+      { "reward": "coins", "amount": 30, "weight": 44 },
+      { "reward": "coins", "amount": 150, "weight": 10 },
+      { "reward": "coins", "amount": 500, "weight": 2 },
+      { "reward": "coxeur", "amount": 1, "weight": 20 },
+      { "reward": "apprenti", "amount": 1, "weight": 14 },
+      { "reward": "dioule", "amount": 1, "weight": 10 }
+    ]
+  },
+  "rewarded_ads_per_day": 25
+}

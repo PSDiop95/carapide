@@ -1,14 +1,16 @@
 extends GutTest
 ## Tout niveau listé doit être valide, soluble et conforme au plan de difficulté.
 
-const LEVEL_COUNT: int = 10
-const REQUIRED_MARGIN_MIN: Array[int] = [3, 3, 3, 3, 3, 2, 2, 2, 2, 1]
-const REQUIRED_MARGIN_MAX: Array[int] = [3, 3, 3, 3, 3, 2, 2, 2, 2, 1]
-const REQUIRED_DESTS_MIN: Array[int] = [2, 2, 2, 2, 2, 3, 3, 3, 3, 5]
-const REQUIRED_DESTS_MAX: Array[int] = [2, 2, 2, 3, 3, 5, 5, 5, 5, 5]
+const LEVEL_COUNT: int = 15
+## Prompt 02 A7 : à partir de ce niveau, taper le premier véhicule libre doit perdre.
+const NAIVE_LOSES_FROM: int = 4
+const REQUIRED_MARGIN_MIN: Array[int] = [3, 3, 3, 3, 3, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2]
+const REQUIRED_MARGIN_MAX: Array[int] = [3, 3, 3, 3, 3, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2]
+const REQUIRED_DESTS_MIN: Array[int] = [2, 2, 2, 2, 2, 3, 3, 3, 3, 5, 3, 3, 3, 3, 3]
+const REQUIRED_DESTS_MAX: Array[int] = [2, 2, 2, 3, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
 ## GDD §4 : 8–15 véhicules en 1–5, 15–30 en 6–20.
-const REQUIRED_VEHICLES_MIN: Array[int] = [8, 8, 8, 8, 8, 15, 15, 15, 15, 15]
-const REQUIRED_VEHICLES_MAX: Array[int] = [15, 15, 15, 15, 15, 30, 30, 30, 30, 30]
+const REQUIRED_VEHICLES_MIN: Array[int] = [8, 8, 8, 8, 8, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15]
+const REQUIRED_VEHICLES_MAX: Array[int] = [15, 15, 15, 15, 15, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
 ## GDD §3 : niveau d'apparition de chaque véhicule.
 const UNLOCK_LEVEL: Dictionary[String, int] = {"taxi": 1, "car_rapide": 1, "clando": 6, "ndiaga_ndiaye": 10}
 
@@ -23,7 +25,7 @@ func _level(index: int) -> LevelData:
 	return LevelLoader.load_file(LevelCatalog.level_paths()[index], _catalog).level
 
 
-func test_catalog_lists_ten_levels() -> void:
+func test_catalog_lists_every_level() -> void:
 	assert_eq(LevelCatalog.level_paths().size(), LEVEL_COUNT)
 
 
@@ -63,6 +65,11 @@ func test_solution_of_every_level_wins_through_game_rules() -> void:
 		assert_eq(rules.status, GameRules.Status.WON, "Niveau %d" % (index + 1))
 
 
+func test_naive_play_loses_from_level_four() -> void:
+	for number: int in range(NAIVE_LOSES_FROM, LEVEL_COUNT + 1):
+		assert_false(Solver.naive_play(_level(number - 1)), "Niveau %d gagné au jeu naïf" % number)
+
+
 func test_jam_has_real_dependencies_from_level_three() -> void:
 	for index: int in range(2, LEVEL_COUNT):
 		var level: LevelData = _level(index)
@@ -72,3 +79,25 @@ func test_jam_has_real_dependencies_from_level_three() -> void:
 			if not board.can_exit(vehicle.id):
 				blocked += 1
 		assert_gt(blocked * 3, level.vehicles.size(), "Niveau %d : trop peu de blocage (%d)" % [index + 1, blocked])
+
+
+func _load_level(number: int) -> LevelData:
+	var loaded: LevelLoadResult = LevelLoader.load_file(LevelCatalog.level_paths()[number - 1], VehicleCatalog.load_default())
+	return loaded.level
+
+
+## Le tutoriel force ce coup : il ne doit pas rendre le niveau ingagnable.
+func test_coxeur_tutorial_keeps_level_3_winnable_without_booster() -> void:
+	var rules: GameRules = GameRules.new(_load_level(3), BoosterAccess.new(true))
+	rules.use_coxeur(rules.tutorial_vehicle())
+	assert_true(BoosterSolver.can_still_win(rules, 0))
+
+
+func test_apprenti_tutorial_keeps_level_8_winnable_after_any_first_vehicle() -> void:
+	var level: LevelData = _load_level(8)
+	for id: int in GameRules.new(level).free_vehicles():
+		var rules: GameRules = GameRules.new(level, BoosterAccess.new(true))
+		rules.tap(id)
+		if rules.can_use_apprenti():
+			rules.use_apprenti()
+			assert_true(BoosterSolver.can_still_win(rules, 1), "Véhicule %d" % id)

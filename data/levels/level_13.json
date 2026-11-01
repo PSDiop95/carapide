@@ -1,0 +1,268 @@
+{
+  "board": [
+    10.0,
+    12.0
+  ],
+  "id": 13,
+  "queue": [
+    {
+      "count": 4,
+      "dest": "pikine"
+    },
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "pikine"
+    },
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 12,
+      "dest": "pikine"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    },
+    {
+      "count": 8,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    },
+    {
+      "count": 12,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    },
+    {
+      "count": 8,
+      "dest": "parcelles"
+    },
+    {
+      "count": 16,
+      "dest": "pikine"
+    },
+    {
+      "count": 12,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    }
+  ],
+  "slots": 4,
+  "vehicles": [
+    {
+      "angle": 0.0,
+      "dest": "colobane",
+      "pos": [
+        3.0,
+        1.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 30.0,
+      "dest": "petersen",
+      "pos": [
+        5.5,
+        7.5
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 0.0,
+      "dest": "parcelles",
+      "pos": [
+        5.5,
+        10.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 180.0,
+      "dest": "pikine",
+      "pos": [
+        2.0,
+        5.0
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 30.0,
+      "dest": "colobane",
+      "pos": [
+        8.0,
+        4.0
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 300.0,
+      "dest": "petersen",
+      "pos": [
+        6.0,
+        3.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 180.0,
+      "dest": "parcelles",
+      "pos": [
+        5.0,
+        11.5
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 300.0,
+      "dest": "pikine",
+      "pos": [
+        8.0,
+        9.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 90.0,
+      "dest": "colobane",
+      "pos": [
+        1.0,
+        7.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 0.0,
+      "dest": "petersen",
+      "pos": [
+        8.5,
+        5.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 300.0,
+      "dest": "parcelles",
+      "pos": [
+        8.5,
+        10.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 120.0,
+      "dest": "pikine",
+      "pos": [
+        2.0,
+        9.0
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 0.0,
+      "dest": "colobane",
+      "pos": [
+        5.5,
+        1.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 60.0,
+      "dest": "petersen",
+      "pos": [
+        9.0,
+        2.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 270.0,
+      "dest": "parcelles",
+      "pos": [
+        0.5,
+        1.0
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 270.0,
+      "dest": "pikine",
+      "pos": [
+        7.5,
+        1.0
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 180.0,
+      "dest": "colobane",
+      "pos": [
+        2.0,
+        6.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 0.0,
+      "dest": "petersen",
+      "pos": [
+        9.0,
+        6.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 210.0,
+      "dest": "parcelles",
+      "pos": [
+        1.5,
+        3.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 120.0,
+      "dest": "pikine",
+      "pos": [
+        3.0,
+        9.5
+      ],
+      "type": "clando"
+    }
+  ]
+}

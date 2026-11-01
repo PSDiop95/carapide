@@ -19,3 +19,11 @@ static func register() -> void:
 		translation.add_message(key, text)
 	TranslationServer.add_translation(translation)
 	TranslationServer.set_locale(LOCALE)
+	_share_font_atlas()
+
+
+## En MSDF, toutes les tailles de texte partagent un atlas : une taille de plus ne coûte plus de mémoire vidéo.
+static func _share_font_atlas() -> void:
+	var font: FontFile = ThemeDB.fallback_font as FontFile
+	if font != null:
+		font.multichannel_signed_distance_field = true

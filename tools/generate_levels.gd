@@ -1,16 +1,26 @@
 extends SceneTree
 ## Régénère data/levels/ : godot --headless -s res://tools/generate_levels.gd
 ## Déterministe : même seed, mêmes niveaux.
+## Les niveaux livrés sont retouchés à la main : régénérer les écrase, d'où `-- --overwrite`.
+## `-- --from=N` : génère seulement à partir du niveau N et complète la liste, sans toucher aux précédents.
 
 const LEVELS_DIR: String = "res://data/levels/"
 const ATTEMPTS_PER_LEVEL: int = 200
 
 
 func _init() -> void:
+	var from_level: int = _from_level()
+	if from_level == 0 and not OS.get_cmdline_user_args().has("--overwrite"):
+		printerr("Refus : niveaux retouchés à la main. Relancer avec -- --overwrite ou -- --from=N.")
+		quit(1)
+		return
 	var catalog: VehicleCatalog = VehicleCatalog.load_default()
 	var order: Array[String] = []
 	var failures: int = 0
 	for spec: LevelSpec in LevelPlan.all():
+		if spec.id < from_level:
+			order.append("level_%02d.json" % spec.id)
+			continue
 		var raw: Dictionary = _generate_one(spec, catalog)
 		if raw.is_empty():
 			printerr("Niveau %d : échec de génération" % spec.id)
@@ -23,6 +33,14 @@ func _init() -> void:
 	if failures == 0:
 		_write(LevelCatalog.CONFIG_PATH, JSON.stringify({"order": order}, "  ") + "\n")
 	quit(1 if failures > 0 else 0)
+
+
+## 0 : aucun filtre demandé.
+func _from_level() -> int:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--from="):
+			return argument.trim_prefix("--from=").to_int()
+	return 0
 
 
 func _generate_one(spec: LevelSpec, catalog: VehicleCatalog) -> Dictionary:

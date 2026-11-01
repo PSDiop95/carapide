@@ -106,6 +106,16 @@ func test_solver_agrees_with_exhaustive_game_rules_on_random_levels() -> void:
 			assert_true(_replay_wins(level, result.solution))
 
 
+func test_naive_play_wins_when_id_order_serves_the_queue() -> void:
+	assert_true(Solver.naive_play(_lanes(["a", "b"], [["a", 4], ["b", 4]])))
+
+
+func test_naive_play_loses_when_free_vehicles_fill_the_station() -> void:
+	var level: LevelData = _lanes(["a", "a", "b"], [["b", 4], ["a", 8]], 2)
+	assert_true(Solver.solve(level, 2).solvable)
+	assert_false(Solver.naive_play(level))
+
+
 func test_insoluble_fixture_fails_level_check() -> void:
 	var errors: PackedStringArray = LevelChecker.check_file("res://tests/fixtures/insoluble.json", _catalog)
 	assert_eq(errors.size(), 1)

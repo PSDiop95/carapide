@@ -1,7 +1,8 @@
 class_name LevelPlan
 extends RefCounted
-## Plan des 10 niveaux du prototype, GDD §4 plage 1–20 et exception validée :
-## niv. 1–3 à 2 destinations, 4–5 à 3, marge 3 ; 6–9 marge 2 ; niveau 10 à 5 destinations, marge 1.
+## Plan des niveaux du prototype, GDD §4 plage 1–20 et exception validée :
+## niv. 1–3 à 2 destinations, 4–5 à 3, marge 3 ; 6–9 marge 2 ; niveau 10 à 5 destinations, marge 1 ;
+## 11–15 marge 2, de quoi atteindre le déblocage du Dioulé (niv. 13).
 
 const CARDINAL: Array[float] = [0.0, 90.0, 180.0, 270.0]
 const WITH_DIAGONALS: Array[float] = [0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0]
@@ -25,6 +26,11 @@ static func all() -> Array[LevelSpec]:
 		LevelSpec.make(8, Vector2(9, 11), WITH_CLANDO, FREE_ANGLES, _dests(4), 17, 2),
 		LevelSpec.make(9, Vector2(10, 11), WITH_CLANDO, FREE_ANGLES, _dests(5), 18, 2),
 		LevelSpec.make(10, Vector2(10, 12), WITH_NDIAGA, FREE_ANGLES, _dests(5), 20, 1),
+		LevelSpec.make(11, Vector2(10, 12), WITH_NDIAGA, FREE_ANGLES, _dests(3), 18, 2),
+		LevelSpec.make(12, Vector2(10, 12), WITH_NDIAGA, FREE_ANGLES, _dests(4), 19, 2),
+		LevelSpec.make(13, Vector2(10, 12), WITH_NDIAGA, FREE_ANGLES, _dests(4), 20, 2),
+		LevelSpec.make(14, Vector2(10, 13), WITH_NDIAGA, FREE_ANGLES, _dests(5), 21, 2),
+		LevelSpec.make(15, Vector2(10, 13), WITH_NDIAGA, FREE_ANGLES, _dests(5), 22, 2),
 	]
 
 

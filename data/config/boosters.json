@@ -1,0 +1,9 @@
+{
+  "boosters": {
+    "coxeur": { "unlock_level": 3 },
+    "apprenti": { "unlock_level": 8 },
+    "dioule": { "unlock_level": 13 },
+    "garage": { "unlock_level": 1 }
+  },
+  "dioule_max_nodes": 260
+}

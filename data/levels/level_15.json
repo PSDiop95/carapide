@@ -1,0 +1,298 @@
+{
+  "board": [
+    10.0,
+    13.0
+  ],
+  "id": 15,
+  "queue": [
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "rufisque"
+    },
+    {
+      "count": 12,
+      "dest": "pikine"
+    },
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "rufisque"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "pikine"
+    },
+    {
+      "count": 12,
+      "dest": "parcelles"
+    },
+    {
+      "count": 8,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "rufisque"
+    },
+    {
+      "count": 8,
+      "dest": "pikine"
+    },
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 12,
+      "dest": "rufisque"
+    },
+    {
+      "count": 12,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "pikine"
+    },
+    {
+      "count": 12,
+      "dest": "parcelles"
+    },
+    {
+      "count": 8,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    }
+  ],
+  "slots": 4,
+  "vehicles": [
+    {
+      "angle": 60.0,
+      "dest": "colobane",
+      "pos": [
+        8.0,
+        11.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 0.0,
+      "dest": "petersen",
+      "pos": [
+        7.0,
+        1.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 210.0,
+      "dest": "parcelles",
+      "pos": [
+        3.0,
+        6.0
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 90.0,
+      "dest": "pikine",
+      "pos": [
+        0.5,
+        6.0
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 330.0,
+      "dest": "rufisque",
+      "pos": [
+        2.0,
+        10.5
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 90.0,
+      "dest": "colobane",
+      "pos": [
+        6.0,
+        7.5
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 180.0,
+      "dest": "petersen",
+      "pos": [
+        4.5,
+        1.0
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 240.0,
+      "dest": "parcelles",
+      "pos": [
+        1.0,
+        2.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 240.0,
+      "dest": "pikine",
+      "pos": [
+        2.5,
+        2.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 30.0,
+      "dest": "rufisque",
+      "pos": [
+        5.0,
+        4.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 300.0,
+      "dest": "colobane",
+      "pos": [
+        8.5,
+        7.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 0.0,
+      "dest": "petersen",
+      "pos": [
+        7.0,
+        3.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 150.0,
+      "dest": "parcelles",
+      "pos": [
+        4.0,
+        11.0
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 180.0,
+      "dest": "pikine",
+      "pos": [
+        1.5,
+        9.0
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 0.0,
+      "dest": "rufisque",
+      "pos": [
+        7.0,
+        2.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 0.0,
+      "dest": "colobane",
+      "pos": [
+        8.5,
+        9.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 90.0,
+      "dest": "petersen",
+      "pos": [
+        9.5,
+        11.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 180.0,
+      "dest": "parcelles",
+      "pos": [
+        4.5,
+        8.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 270.0,
+      "dest": "pikine",
+      "pos": [
+        9.0,
+        2.0
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 0.0,
+      "dest": "rufisque",
+      "pos": [
+        8.0,
+        4.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 180.0,
+      "dest": "colobane",
+      "pos": [
+        2.0,
+        8.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 180.0,
+      "dest": "petersen",
+      "pos": [
+        1.0,
+        12.5
+      ],
+      "type": "clando"
+    }
+  ]
+}
