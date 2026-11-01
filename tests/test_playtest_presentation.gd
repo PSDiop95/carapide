@@ -46,6 +46,59 @@ func test_every_picto_is_distinct_and_triangulates() -> void:
 	assert_eq(seen.size(), 8)
 
 
+func _vehicle_view(palette: ViewPalette) -> VehicleView:
+	var level: LevelData = LevelLoader.load_file(LevelCatalog.level_paths()[0], VehicleCatalog.load_default()).level
+	var view: VehicleView = VehicleView.new()
+	view.setup(level.vehicles[0], Vector3.ZERO, palette)
+	add_child_autofree(view)
+	return view
+
+
+func test_roof_merges_arrow_and_picto_in_one_surface_at_their_place() -> void:
+	var palette: ViewPalette = ViewPalette.new(PresentationConfig.load_default())
+	var dest: String = PresentationConfig.load_default().dest_pictos.keys()[0]
+	var center: Vector3 = Vector3(-1.0, 0.6, 0.0)
+	var heading: float = 0.7
+	var roof: ArrayMesh = palette.roof_mesh(dest, Vector3.ZERO, center, 0.3, heading)
+	assert_eq(roof.get_surface_count(), 1)
+	var points: PackedVector3Array = roof.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	var arrow_count: int = palette.arrow_mesh.surface_get_array_len(0)
+	assert_eq(points.size(), arrow_count + palette.picto_mesh(dest).surface_get_array_len(0))
+	var source: PackedVector3Array = palette.picto_mesh(dest).surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	var node: Node3D = Node3D.new()
+	node.position = center
+	node.rotation.y = -heading
+	node.scale = Vector3.ONE * 0.3
+	assert_almost_eq(points[arrow_count], node.transform * source[0], Vector3.ONE * 0.0001, "Même place que le nœud séparé")
+	node.free()
+
+
+func test_still_vehicle_uses_the_roof_moving_vehicle_the_separate_nodes() -> void:
+	var view: VehicleView = _vehicle_view(ViewPalette.new(PresentationConfig.load_default()))
+	assert_true(view._roof.visible)
+	assert_false(view._arrow.visible)
+	assert_false(view._picto.visible)
+	view._set_heading(1.0)
+	assert_false(view._roof.visible)
+	assert_true(view._arrow.visible)
+	assert_true(view._picto.visible)
+	view._finish_parking()
+	assert_false(view._roof.visible)
+	assert_false(view._arrow.visible, "Garé : plus de flèche")
+	assert_true(view._picto.visible)
+
+
+func test_dioule_redraws_the_roof_of_a_still_vehicle() -> void:
+	var config: PresentationConfig = PresentationConfig.load_default()
+	var palette: ViewPalette = ViewPalette.new(config)
+	var view: VehicleView = _vehicle_view(palette)
+	var before: Mesh = view._roof.mesh
+	var other: String = config.dest_pictos.keys()[1]
+	view._show_dest(other, palette)
+	assert_true(view._roof.visible)
+	assert_ne(view._roof.mesh, before)
+
+
 func test_every_destination_has_its_own_picto_and_name() -> void:
 	var config: PresentationConfig = PresentationConfig.load_default()
 	var pictos: Dictionary[String, bool] = {}

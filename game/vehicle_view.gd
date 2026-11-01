@@ -25,6 +25,8 @@ var is_parked: bool = false
 var _body: MeshInstance3D = MeshInstance3D.new()
 var _arrow: MeshInstance3D = MeshInstance3D.new()
 var _picto: MeshInstance3D = MeshInstance3D.new()
+## Immobile sur le plateau : flèche et pictogramme réunis. Dès que le cap change, les deux nœuds reprennent.
+var _roof: MeshInstance3D = MeshInstance3D.new()
 var _count_label: Label3D = null
 var _capacity: int = 0
 var _length: float = 0.0
@@ -56,6 +58,9 @@ func setup(vehicle: LevelVehicle, world_position: Vector3, palette: ViewPalette)
 	_picto.scale = Vector3.ONE * PICTO_RADIUS
 	add_child(_picto)
 	_set_heading(deg_to_rad(vehicle.angle))
+	_roof.material_override = palette.picto_material
+	add_child(_roof)
+	_show_roof(vehicle.dest, palette)
 
 
 ## Suit le trajet à vitesse lissée puis s'annonce garé. `duration` calculée par la scène.
@@ -176,6 +181,17 @@ func _follow_path(distance: float) -> void:
 func _set_heading(angle: float) -> void:
 	rotation.y = angle
 	_picto.rotation.y = -angle
+	if _roof.visible:
+		_roof.visible = false
+		_arrow.visible = true
+		_picto.visible = true
+
+
+func _show_roof(dest: String, palette: ViewPalette) -> void:
+	_roof.mesh = palette.roof_mesh(dest, _arrow.position, _picto.position, PICTO_RADIUS, rotation.y)
+	_roof.visible = true
+	_arrow.visible = false
+	_picto.visible = false
 
 
 func _restore_material() -> void:
@@ -187,6 +203,8 @@ func _show_dest(dest: String, palette: ViewPalette) -> void:
 	if _body.material_override != _highlight_material:
 		_body.material_override = _dest_material
 	_picto.mesh = palette.picto_mesh(dest)
+	if _roof.visible:
+		_show_roof(dest, palette)
 
 
 ## Passagers manquants avant le départ, sous le véhicule garé.

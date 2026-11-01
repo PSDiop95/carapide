@@ -62,6 +62,31 @@ func picto_mesh(dest: String) -> ArrayMesh:
 	return _picto_meshes[shape]
 
 
+## Flèche et pictogramme du véhicule immobile, en une seule surface : un draw call au lieu de deux.
+## Le pictogramme est tourné de -`heading` pour garder le sens des pancartes.
+func roof_mesh(dest: String, arrow_center: Vector3, picto_center: Vector3, picto_radius: float, heading: float) -> ArrayMesh:
+	var points: PackedVector3Array = PackedVector3Array()
+	var colors: PackedColorArray = PackedColorArray()
+	var arrow_points: PackedVector3Array = arrow_mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	for point: Vector3 in arrow_points:
+		points.append(point + arrow_center)
+		colors.append(Color.WHITE)
+	var picto: Array = picto_mesh(dest).surface_get_arrays(0)
+	var picto_points: PackedVector3Array = picto[Mesh.ARRAY_VERTEX]
+	var picto_colors: PackedColorArray = picto[Mesh.ARRAY_COLOR]
+	var placement: Transform3D = Transform3D(Basis(Vector3.UP, -heading).scaled(Vector3.ONE * picto_radius), picto_center)
+	for index: int in picto_points.size():
+		points.append(placement * picto_points[index])
+		colors.append(picto_colors[index])
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = points
+	arrays[Mesh.ARRAY_COLOR] = colors
+	var mesh: ArrayMesh = ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
+
+
 static func _picto_material() -> StandardMaterial3D:
 	var material: StandardMaterial3D = _flat_material(Color.WHITE)
 	material.vertex_color_use_as_albedo = true
