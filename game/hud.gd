@@ -4,6 +4,8 @@ extends CanvasLayer
 
 signal primary_pressed
 signal new_tester_requested
+signal boosters_toggled
+signal bonus_pressed
 
 const FONT_SIZE: int = 36
 const TITLE_FONT_SIZE: int = 56
@@ -19,11 +21,16 @@ const MORE_FONT_SIZE: int = 26
 ## Écran de partage du CSV : 5 taps sur le titre (Prompt 02 A6).
 const HIDDEN_TAPS: int = 5
 const HIDDEN_WINDOW_MS: int = 3000
+const STATS_TOP: float = 150.0
 
 var primary_button: Button = Button.new()
 var level_button: Button = Button.new()
 var playtest_panel: PlaytestPanel = PlaytestPanel.new()
 var result_title: Label = Label.new()
+var result_detail: Label = Label.new()
+var bonus_button: Button = Button.new()
+## Sous l'écran de fin : barre, pop-up et tutoriel des boosters.
+var booster_layer: Control = Control.new()
 
 var _chips_row: HBoxContainer = HBoxContainer.new()
 var _chips: Array[QueueChip] = []
@@ -33,6 +40,8 @@ var _hidden_taps: HiddenTapDetector = HiddenTapDetector.new(HIDDEN_TAPS, HIDDEN_
 var _passengers_label: Label = Label.new()
 var _stats_label: Label = Label.new()
 var _end_screen: ColorRect = ColorRect.new()
+var _coins_label: Label = Label.new()
+var _ad_curtain: ColorRect = ColorRect.new()
 
 
 ## À appeler avant d'entrer dans l'arbre.
@@ -41,14 +50,20 @@ func configure(config: PresentationConfig) -> void:
 
 
 func _ready() -> void:
+	booster_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	booster_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(booster_layer)
 	_build_chips()
 	_add_top_label(_passengers_label, Control.PRESET_TOP_RIGHT, HORIZONTAL_ALIGNMENT_RIGHT)
 	_build_end_screen()
 	_build_level_button()
 	add_child(playtest_panel)
 	playtest_panel.new_tester_requested.connect(new_tester_requested.emit)
+	playtest_panel.boosters_toggled.connect(boosters_toggled.emit)
 	if OS.is_debug_build():
 		_build_stats()
+	_build_coins()
+	_build_ad_curtain()
 	hide_result()
 
 
@@ -91,6 +106,53 @@ func show_result(title_key: String, button_key: String) -> void:
 
 func hide_result() -> void:
 	_end_screen.visible = false
+	result_detail.visible = false
+	bonus_button.visible = false
+
+
+func show_coins_earned(detail: String) -> void:
+	result_detail.text = detail
+	result_detail.visible = true
+
+
+func show_bonus(text: String) -> void:
+	bonus_button.text = text
+	bonus_button.visible = true
+
+
+func hide_bonus() -> void:
+	bonus_button.visible = false
+
+
+## Négatif : solde masqué (boosters désactivés).
+func set_coins(balance: int) -> void:
+	_coins_label.visible = balance >= 0
+	_coins_label.text = tr("COINS_LABEL") % balance
+
+
+func show_ad_curtain() -> void:
+	_ad_curtain.visible = true
+
+
+func hide_ad_curtain() -> void:
+	_ad_curtain.visible = false
+
+
+func is_ad_curtain_visible() -> bool:
+	return _ad_curtain.visible
+
+
+## Vrai si ce point d'écran tombe sur un contrôle affiché par-dessus le plateau.
+func covers_point(at: Vector2) -> bool:
+	if _ad_curtain.visible or _end_screen.visible or playtest_panel.visible:
+		return true
+	if level_button.get_global_rect().has_point(at):
+		return true
+	for child: Node in booster_layer.get_children():
+		var control: Control = child as Control
+		if control != null and control.visible and control.get_global_rect().has_point(at):
+			return true
+	return false
 
 
 func is_result_visible() -> bool:
@@ -152,19 +214,46 @@ func _build_end_screen() -> void:
 	result_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	result_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(result_title)
+	result_detail.add_theme_font_size_override("font_size", FONT_SIZE)
+	result_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(result_detail)
 	primary_button.custom_minimum_size = BUTTON_MIN_SIZE
 	primary_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	primary_button.add_theme_font_size_override("font_size", FONT_SIZE)
 	primary_button.pressed.connect(primary_pressed.emit)
 	column.add_child(primary_button)
+	bonus_button.custom_minimum_size = BUTTON_MIN_SIZE
+	bonus_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	bonus_button.add_theme_font_size_override("font_size", FONT_SIZE)
+	bonus_button.pressed.connect(bonus_pressed.emit)
+	column.add_child(bonus_button)
+
+
+func _build_coins() -> void:
+	_add_top_label(_coins_label, Control.PRESET_CENTER_TOP, HORIZONTAL_ALIGNMENT_CENTER)
+	_coins_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_coins_label.visible = false
+
+
+func _build_ad_curtain() -> void:
+	_ad_curtain.color = SHADE_COLOR
+	_ad_curtain.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_ad_curtain.visible = false
+	add_child(_ad_curtain)
+	var label: Label = Label.new()
+	label.text = tr("AD_PLAYING")
+	label.add_theme_font_size_override("font_size", TITLE_FONT_SIZE)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_ad_curtain.add_child(label)
 
 
 func _build_stats() -> void:
 	_stats_label.add_theme_font_size_override("font_size", STATS_FONT_SIZE)
 	_stats_label.add_theme_color_override("font_color", Color.BLACK)
 	_stats_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_stats_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, int(MARGIN))
-	_stats_label.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_stats_label.position = Vector2(MARGIN, STATS_TOP)
 	add_child(_stats_label)
 	var timer: Timer = Timer.new()
 	timer.wait_time = STATS_REFRESH_SECONDS

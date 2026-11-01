@@ -19,11 +19,13 @@ const PAD_COLOR: Color = Color(0.62, 0.62, 0.6)
 const NORMAL_COLOR: Color = Color(0.5, 0.5, 0.5)
 const WARNING_COLOR: Color = Color(0.95, 0.6, 0.15)
 const CRITICAL_COLOR: Color = Color(0.9, 0.2, 0.15)
+const COXEUR_PAD_COLOR: Color = Color(0.93, 0.78, 0.3)
 
 var danger: Danger = Danger.NORMAL
 
 var _backdrop_material: StandardMaterial3D = StandardMaterial3D.new()
 var _pad_material: StandardMaterial3D = StandardMaterial3D.new()
+var _coxeur_material: StandardMaterial3D = StandardMaterial3D.new()
 var _config: PresentationConfig
 var _palette: ViewPalette
 var _slots: int = 0
@@ -41,12 +43,10 @@ func setup(layout: LevelLayout, config: PresentationConfig, palette: ViewPalette
 	var pad: PlaneMesh = PlaneMesh.new()
 	pad.size = PAD_SIZE
 	for slot: int in layout.slots:
-		var instance: MeshInstance3D = MeshInstance3D.new()
-		instance.mesh = pad
-		instance.material_override = _pad_material
-		instance.position = layout.slot_world(slot) + Vector3(0.0, PAD_Y, PAD_CENTER_OFFSET_Z)
-		add_child(instance)
-		_pictos.append(_add_picto(layout.slot_world(slot)))
+		_add_pad(pad, _pad_material, layout.slot_world(slot))
+	if layout.coxeur_visible:
+		_coxeur_material.albedo_color = COXEUR_PAD_COLOR
+		_add_pad(pad, _coxeur_material, layout.slot_world(layout.coxeur_slot()))
 
 
 ## Le niveau de danger selon les places libres.
@@ -58,17 +58,29 @@ static func danger_for(free_slots: int, warning_free: int, critical_free: int) -
 	return Danger.NORMAL
 
 
+## La place Coxeur (dernière) ne compte pas dans le danger.
 func vehicle_arrived(slot: int, dest: String) -> void:
-	_occupied += 1
+	if slot < _slots:
+		_occupied += 1
 	_pictos[slot].mesh = _palette.picto_mesh(dest)
 	_pictos[slot].visible = true
 	_update_danger()
 
 
 func vehicle_departed(slot: int) -> void:
-	_occupied -= 1
+	if slot < _slots:
+		_occupied -= 1
 	_pictos[slot].visible = false
 	_update_danger()
+
+
+func _add_pad(pad: PlaneMesh, material: StandardMaterial3D, slot_position: Vector3) -> void:
+	var instance: MeshInstance3D = MeshInstance3D.new()
+	instance.mesh = pad
+	instance.material_override = material
+	instance.position = slot_position + Vector3(0.0, PAD_Y, PAD_CENTER_OFFSET_Z)
+	add_child(instance)
+	_pictos.append(_add_picto(slot_position))
 
 
 func _add_backdrop(layout: LevelLayout) -> void:
@@ -78,7 +90,8 @@ func _add_backdrop(layout: LevelLayout) -> void:
 	var backdrop: MeshInstance3D = MeshInstance3D.new()
 	backdrop.mesh = plane
 	backdrop.material_override = _backdrop_material
-	backdrop.position = Vector3(0.0, BACKDROP_Y, LevelLayout.STATION_Z + PAD_CENTER_OFFSET_Z)
+	var center_x: float = (layout.slot_world(0).x + layout.slot_world(layout.slots - 1).x) * 0.5
+	backdrop.position = Vector3(center_x, BACKDROP_Y, LevelLayout.STATION_Z + PAD_CENTER_OFFSET_Z)
 	add_child(backdrop)
 
 

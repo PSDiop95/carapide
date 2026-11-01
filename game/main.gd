@@ -16,6 +16,9 @@ var _level_number: int = LevelProgress.FIRST_LEVEL
 var _next_level_number: int = LevelProgress.FIRST_LEVEL
 var _was_lost: bool = false
 var _telemetry: LevelTelemetry
+var _inventory: BoosterInventory = null
+var _flow: BoosterFlow = null
+var _victory_coins: int = 0
 
 
 func _ready() -> void:
@@ -29,6 +32,10 @@ func _ready() -> void:
 	add_child(hud)
 	hud.primary_pressed.connect(_on_primary_pressed)
 	hud.new_tester_requested.connect(_on_new_tester_requested)
+	hud.boosters_toggled.connect(_on_boosters_toggled)
+	hud.bonus_pressed.connect(_on_bonus_pressed)
+	Services.wallet.balance_changed.connect(_on_balance_changed)
+	_apply_boosters_flag()
 	_start_level(LevelProgress.current_level(Services.save, _paths.size()))
 
 
@@ -44,12 +51,19 @@ func _start_level(level_number: int) -> void:
 	current_level = loaded.level
 	view = LevelView.new()
 	add_child(view)
+	if _inventory != null:
+		_inventory.enter_level(level_number)
 	view.passengers_counted.connect(hud.set_passengers)
 	view.level_ended.connect(_on_level_ended)
 	view.queue_blocks_changed.connect(hud.set_queue_blocks)
 	view.vehicle_moved.connect(_telemetry.vehicle_moved)
 	view.tap_blocked.connect(_telemetry.tap_blocked)
-	view.setup(loaded.level, _config)
+	if _inventory != null:
+		var coxeur_visible: bool = _inventory.is_unlocked(BoosterAccess.Kind.COXEUR)
+		view.setup(loaded.level, _config, _inventory, coxeur_visible)
+		_flow.attach(view)
+	else:
+		view.setup(loaded.level, _config)
 	hud.hide_result()
 	hud.set_level(level_number)
 	_telemetry.level_started(loaded.level.id, Time.get_ticks_msec())
@@ -75,6 +89,31 @@ func _show_victory() -> void:
 		hud.show_result("ALL_DONE_TITLE", "REPLAY_BUTTON")
 	else:
 		hud.show_result("WON_TITLE", "NEXT_BUTTON")
+	if _inventory != null:
+		_award_victory()
+
+
+func _award_victory() -> void:
+	var config: BoosterConfig = _inventory.config
+	Services.wallet.add(config.victory_coins)
+	_victory_coins = config.victory_coins
+	hud.show_coins_earned(tr("VICTORY_COINS") % _victory_coins)
+	if Services.ads.is_rewarded_available():
+		hud.show_bonus(tr("VICTORY_DOUBLE") % config.victory_ad_multiplier)
+
+
+## Pub vue jusqu'au bout : le gain de la victoire est multiplié, une seule fois.
+func _on_bonus_pressed() -> void:
+	hud.hide_bonus()
+	hud.show_ad_curtain()
+	var watched: bool = await Services.ads.show_rewarded()
+	hud.hide_ad_curtain()
+	if not watched:
+		return
+	var multiplier: int = _inventory.config.victory_ad_multiplier
+	Services.wallet.add(_victory_coins * (multiplier - 1))
+	_victory_coins *= multiplier
+	hud.show_coins_earned(tr("VICTORY_COINS") % _victory_coins)
 
 
 func _on_primary_pressed() -> void:
@@ -82,6 +121,15 @@ func _on_primary_pressed() -> void:
 		_telemetry.level_restarted()
 	_was_lost = false
 	_start_level(_next_level_number)
+
+
+## Lecture seule, pour les outils de vérification.
+func get_flow() -> BoosterFlow:
+	return _flow
+
+
+func get_inventory() -> BoosterInventory:
+	return _inventory
 
 
 ## Rejoue le niveau courant, sans passer par l'écran de fin (outils de vérification).
@@ -95,5 +143,42 @@ func _on_new_tester_requested() -> void:
 	Services.save.set_int(TESTER_KEY, tester)
 	Services.analytics.tester = tester
 	_next_level_number = LevelProgress.reset(Services.save)
+	if _inventory != null:
+		_inventory.reset()
 	_was_lost = false
 	_start_level(_next_level_number)
+
+
+## L'écran caché fait jouer le même téléphone avec ou sans boosters : le niveau repart.
+func _on_boosters_toggled() -> void:
+	Features.force_boosters(Services.save, not Features.boosters_enabled(Services.save))
+	_apply_boosters_flag()
+	_was_lost = false
+	_start_level(_level_number)
+
+
+func _apply_boosters_flag() -> void:
+	if _flow != null:
+		_flow.queue_free()
+		_flow = null
+	_inventory = null
+	if Features.boosters_enabled(Services.save):
+		_inventory = BoosterInventory.new(BoosterConfig.load_default(), Services.save, Services.wallet, Services.ads)
+		_flow = BoosterFlow.new()
+		add_child(_flow)
+		_flow.setup(_inventory, hud)
+		_flow.booster_used.connect(_on_booster_used)
+		_flow.level_blocked.connect(_on_level_blocked)
+	_on_balance_changed(Services.wallet.balance())
+
+
+func _on_balance_changed(balance: int) -> void:
+	hud.set_coins(balance if _inventory != null else -1)
+
+
+func _on_booster_used(kind: BoosterAccess.Kind) -> void:
+	_telemetry.booster_used(BoosterConfig.KIND_KEYS[kind])
+
+
+func _on_level_blocked() -> void:
+	_telemetry.level_blocked(view.occupied_slots(), view.head_dest())

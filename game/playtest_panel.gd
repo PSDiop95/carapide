@@ -3,6 +3,7 @@ extends ColorRect
 ## Écran caché du playtest : partage du CSV, changement de testeur.
 
 signal new_tester_requested
+signal boosters_toggled
 
 const SHADE: Color = Color(0.0, 0.0, 0.0, 0.85)
 const FONT_SIZE: int = 30
@@ -14,6 +15,7 @@ const EXPORT_FILE: String = "carapide_playtest.csv"
 var _title: Label = Label.new()
 var _summary: Label = Label.new()
 var _status: Label = Label.new()
+var _boosters_button: Button
 
 
 func _ready() -> void:
@@ -31,6 +33,8 @@ func _ready() -> void:
 	column.add_child(_button("PLAYTEST_COPY", _copy))
 	column.add_child(_button("PLAYTEST_SAVE", _save))
 	column.add_child(_button("PLAYTEST_NEW_TESTER", _new_tester))
+	_boosters_button = _button("PLAYTEST_BOOSTERS_ON", _toggle_boosters)
+	column.add_child(_boosters_button)
 	column.add_child(_button("PLAYTEST_CLOSE", hide))
 	_prepare_label(_status, STATUS_FONT_SIZE)
 	column.add_child(_status)
@@ -41,6 +45,7 @@ func open() -> void:
 	_title.text = tr("PLAYTEST_TITLE")
 	_summary.text = tr("PLAYTEST_SUMMARY") % [Services.analytics.tester, Services.analytics.row_count()]
 	_status.text = ""
+	_refresh_boosters()
 	show()
 
 
@@ -63,6 +68,16 @@ func _save() -> void:
 func _new_tester() -> void:
 	new_tester_requested.emit()
 	hide()
+
+
+func _toggle_boosters() -> void:
+	boosters_toggled.emit()
+	_refresh_boosters()
+
+
+func _refresh_boosters() -> void:
+	var enabled: bool = Features.boosters_enabled(Services.save)
+	_boosters_button.text = tr("PLAYTEST_BOOSTERS_ON" if enabled else "PLAYTEST_BOOSTERS_OFF")
 
 
 func _button(key: String, action: Callable) -> Button:

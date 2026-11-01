@@ -52,6 +52,12 @@ static func advise(rules: GameRules, access: BoosterAccess, max_nodes: int = ADV
 	return options[0]
 
 
+## Vrai si cette partie se gagne encore, avec au plus `budget` boosters.
+static func can_still_win(rules: GameRules, budget: int, max_nodes: int = DEFAULT_MAX_NODES) -> bool:
+	var solver: BoosterSolver = BoosterSolver.new(max_nodes)
+	return solver._can_win(rules.copy(solver._everything), budget)
+
+
 static func _options(rules: GameRules, access: BoosterAccess) -> Array[BoosterAdvice]:
 	var options: Array[BoosterAdvice] = []
 	var coxeur: bool = access.can_obtain(BoosterAccess.Kind.COXEUR)

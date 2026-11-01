@@ -79,3 +79,25 @@ func test_jam_has_real_dependencies_from_level_three() -> void:
 			if not board.can_exit(vehicle.id):
 				blocked += 1
 		assert_gt(blocked * 3, level.vehicles.size(), "Niveau %d : trop peu de blocage (%d)" % [index + 1, blocked])
+
+
+func _load_level(number: int) -> LevelData:
+	var loaded: LevelLoadResult = LevelLoader.load_file(LevelCatalog.level_paths()[number - 1], VehicleCatalog.load_default())
+	return loaded.level
+
+
+## Le tutoriel force ce coup : il ne doit pas rendre le niveau ingagnable.
+func test_coxeur_tutorial_keeps_level_3_winnable_without_booster() -> void:
+	var rules: GameRules = GameRules.new(_load_level(3), BoosterAccess.new(true))
+	rules.use_coxeur(rules.tutorial_vehicle())
+	assert_true(BoosterSolver.can_still_win(rules, 0))
+
+
+func test_apprenti_tutorial_keeps_level_8_winnable_after_any_first_vehicle() -> void:
+	var level: LevelData = _load_level(8)
+	for id: int in GameRules.new(level).free_vehicles():
+		var rules: GameRules = GameRules.new(level, BoosterAccess.new(true))
+		rules.tap(id)
+		if rules.can_use_apprenti():
+			rules.use_apprenti()
+			assert_true(BoosterSolver.can_still_win(rules, 1), "Véhicule %d" % id)

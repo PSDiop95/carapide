@@ -31,6 +31,14 @@ func tap_blocked() -> void:
 	_analytics.log_event("tap_blocked", {"level": _level})
 
 
+func booster_used(booster: String) -> void:
+	_analytics.log_event("booster_used", {"level": _level, "moves": _moves, "booster": booster})
+
+
+func level_blocked(occupied_slots: int, head_dest: String) -> void:
+	_analytics.log_event("level_blocked", {"level": _level, "occupied_slots": occupied_slots, "head_dest": head_dest})
+
+
 func level_won(now_ms: int) -> void:
 	_analytics.log_event("level_win", _summary(now_ms))
 

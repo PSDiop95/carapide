@@ -109,6 +109,17 @@ func head_vehicles() -> PackedInt32Array:
 	return ids
 
 
+## Lecture seule : véhicule montré par le tutoriel, de la tête et bloqué de préférence.
+func tutorial_vehicle() -> int:
+	var heads: PackedInt32Array = head_vehicles()
+	if heads.is_empty():
+		return BoardLogic.NO_VEHICLE
+	for id: int in heads:
+		if not _board.can_exit(id):
+			return id
+	return heads[0]
+
+
 ## Lecture seule, pour la détection du véhicule tapé.
 func vehicle_at(x: float, y: float, tolerance: float) -> int:
 	return _board.vehicle_at(x, y, tolerance)

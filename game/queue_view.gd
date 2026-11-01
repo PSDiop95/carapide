@@ -45,6 +45,17 @@ func advance(amount: int) -> void:
 	_refresh()
 
 
+## L'Apprenti a réordonné la file : `blocks` est ce qu'il reste, tête d'abord.
+func replace_remaining(blocks: Array[QueueBlock]) -> void:
+	_queue = blocks
+	_head = 0
+	_passengers = PackedStringArray()
+	for block: QueueBlock in blocks:
+		for _index: int in block.count:
+			_passengers.append(block.dest)
+	_refresh()
+
+
 func current_blocks() -> Array[QueueBlock]:
 	return QueueDisplay.remaining_blocks(_queue, _head)
 

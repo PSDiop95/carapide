@@ -15,16 +15,22 @@ const MIN_SCENE_WIDTH: float = 8.0
 const ROOF_HEIGHT: float = 0.6
 ## Bande réservée en haut de scène aux libellés et pancartes de la file.
 const HUD_RESERVED_Z: float = 3.2
+## Bande réservée en bas de scène à la barre de boosters.
+const BOOSTER_BAR_Z: float = 3.0
 
 var board_width: float
 var board_height: float
 var slots: int
+var coxeur_visible: bool
+var booster_bar_visible: bool
 
 
-func _init(level: LevelData) -> void:
+func _init(level: LevelData, has_coxeur_slot: bool = false, has_booster_bar: bool = false) -> void:
 	board_width = level.board_width
 	board_height = level.board_height
 	slots = level.slots
+	coxeur_visible = has_coxeur_slot
+	booster_bar_visible = has_booster_bar
 
 
 func board_to_world(x: float, y: float) -> Vector3:
@@ -36,11 +42,20 @@ func world_to_board(point: Vector3) -> Vector2:
 
 
 func slot_world(slot: int) -> Vector3:
-	return Vector3((float(slot) - float(slots - 1) * 0.5) * SLOT_SPACING, 0.0, STATION_Z)
+	return Vector3((float(slot) - float(_slot_columns() - 1) * 0.5) * SLOT_SPACING, 0.0, STATION_Z)
+
+
+## Place Coxeur : juste à droite des places normales.
+func coxeur_slot() -> int:
+	return slots
+
+
+func _slot_columns() -> int:
+	return slots + 1 if coxeur_visible else slots
 
 
 func scene_width() -> float:
-	var station_width: float = float(slots) * SLOT_SPACING
+	var station_width: float = float(_slot_columns()) * SLOT_SPACING
 	return maxf(maxf(board_width, station_width), MIN_SCENE_WIDTH) + SCENE_MARGIN
 
 
@@ -73,4 +88,4 @@ func top_z() -> float:
 
 
 func bottom_z() -> float:
-	return board_height + SCENE_MARGIN
+	return board_height + SCENE_MARGIN + (BOOSTER_BAR_Z if booster_bar_visible else 0.0)

@@ -9,7 +9,7 @@ var _busy_slots: Dictionary[int, bool] = {}
 
 ## Vrai si l'événement doit être rejoué tout de suite, sans attendre la file.
 func add(event: GameEvent) -> bool:
-	if event.type == GameEvent.Type.MOVED and not _is_slot_taken(event.slot):
+	if _is_arrival(event) and not _is_slot_taken(event.slot):
 		_busy_slots[event.slot] = true
 		return true
 	_pending.append(event)
@@ -23,17 +23,21 @@ func is_empty() -> bool:
 ## Prochain événement à rejouer ; met à jour l'occupation visuelle des places.
 func next() -> GameEvent:
 	var event: GameEvent = _pending.pop_front()
-	if event.type == GameEvent.Type.MOVED:
+	if _is_arrival(event):
 		_busy_slots[event.slot] = true
 	elif event.type == GameEvent.Type.DEPARTED:
 		_busy_slots.erase(event.slot)
 	return event
 
 
+static func _is_arrival(event: GameEvent) -> bool:
+	return event.type == GameEvent.Type.MOVED or event.type == GameEvent.Type.FLEW
+
+
 func _is_slot_taken(slot: int) -> bool:
 	if _busy_slots.has(slot):
 		return true
 	for event: GameEvent in _pending:
-		if event.type == GameEvent.Type.MOVED and event.slot == slot:
+		if _is_arrival(event) and event.slot == slot:
 			return true
 	return false

@@ -24,6 +24,8 @@ var zoom_max: float = 1.0
 var zoom_wheel_step: float = 1.0
 var queue_chip_count: int = 0
 var queue_sign_count: int = 0
+var coxeur_flight_duration: float = 0.0
+var coxeur_arc_height: float = 0.0
 var dest_colors: Dictionary[String, Color] = {}
 var dest_pictos: Dictionary[String, String] = {}
 var dest_name_keys: Dictionary[String, String] = {}
@@ -51,6 +53,8 @@ static func load_default() -> PresentationConfig:
 	config.zoom_wheel_step = raw["zoom_wheel_step"]
 	config.queue_chip_count = _read_int(raw, "queue_chip_count")
 	config.queue_sign_count = _read_int(raw, "queue_sign_count")
+	config.coxeur_flight_duration = raw["coxeur_flight_duration"]
+	config.coxeur_arc_height = raw["coxeur_arc_height"]
 	config._load_destinations()
 	return config
 

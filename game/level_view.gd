@@ -8,6 +8,9 @@ signal level_ended(won: bool)
 signal queue_blocks_changed(blocks: Array[QueueBlock])
 signal vehicle_moved
 signal tap_blocked
+signal rescue_needed
+signal replay_finished
+signal vehicle_targeted(vehicle_id: int)
 
 const CAMERA_DISTANCE: float = 40.0
 const CAMERA_HEIGHT_MARGIN: float = 1.0
@@ -18,6 +21,12 @@ const SUN_ANGLES: Vector3 = Vector3(-60.0, -30.0, 0.0)
 
 var camera: Camera3D = Camera3D.new()
 var layout: LevelLayout
+## Faux pendant une pop-up, un tutoriel ou une pub : aucun tap n'atteint le plateau.
+var input_enabled: bool = true
+## Vrai pendant la visée du Coxeur : le tap désigne un véhicule, sans le sortir.
+var targeting: bool = false
+## Vrai si l'interface couvre ce point : un tap sur un bouton ne doit pas sortir le véhicule dessous.
+var tap_guard: Callable = Callable()
 
 var _rules: GameRules
 var _config: PresentationConfig
@@ -36,11 +45,12 @@ var _frame_size: float = 0.0
 var _frame_position: Vector3 = Vector3.ZERO
 
 
-func setup(level: LevelData, config: PresentationConfig) -> void:
+## Sans `access` : partie sans booster, comportement du build de playtest A.
+func setup(level: LevelData, config: PresentationConfig, access: BoosterAccess = null, coxeur_visible: bool = false) -> void:
 	_level = level
 	_config = config
-	_rules = GameRules.new(level)
-	layout = LevelLayout.new(level)
+	_rules = GameRules.new(level, access)
+	layout = LevelLayout.new(level, coxeur_visible, access != null)
 	_palette = ViewPalette.new(config)
 	_remaining = level.total_passengers()
 	_build_environment()
@@ -85,12 +95,56 @@ func head_dest() -> String:
 	return _rules.head_dest()
 
 
+func is_playing() -> bool:
+	return _rules.status == GameRules.Status.PLAYING
+
+
+func is_blocked() -> bool:
+	return _rules.status == GameRules.Status.BLOCKED
+
+
+func can_use_coxeur(vehicle_id: int) -> bool:
+	return _rules.can_use_coxeur(vehicle_id)
+
+
+func can_use_apprenti() -> bool:
+	return _rules.can_use_apprenti()
+
+
+func advise(access: BoosterAccess) -> BoosterAdvice:
+	return BoosterSolver.advise(_rules, access)
+
+
+func tutorial_vehicle() -> int:
+	return _rules.tutorial_vehicle()
+
+
+func level_vehicle(vehicle_id: int) -> LevelVehicle:
+	return _level.vehicles[vehicle_id]
+
+
+func play_coxeur(vehicle_id: int) -> void:
+	_apply(_rules.use_coxeur(vehicle_id))
+
+
+func play_apprenti() -> void:
+	_apply(_rules.use_apprenti())
+
+
+func play_abandon() -> void:
+	_apply(_rules.abandon())
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	var button: InputEventMouseButton = event as InputEventMouseButton
 	if button != null and button.pressed:
-		_handle_wheel(button)
+		if input_enabled:
+			_handle_wheel(button)
 		return
-	match _gestures.process(event):
+	var gesture: GestureTracker.Kind = _gestures.process(event)
+	if not input_enabled:
+		return
+	match gesture:
 		GestureTracker.Kind.TAP:
 			_handle_tap(_gestures.position)
 		GestureTracker.Kind.PAN:
@@ -130,11 +184,20 @@ func _apply_zoom() -> void:
 
 
 func _handle_tap(screen_position: Vector2) -> void:
+	if tap_guard.is_valid() and tap_guard.call(screen_position):
+		return
 	var board_point: Vector2 = screen_to_board(screen_position)
 	var vehicle_id: int = _rules.vehicle_at(board_point.x, board_point.y, _config.tap_tolerance)
 	if vehicle_id == BoardLogic.NO_VEHICLE:
 		return
-	for event: GameEvent in _rules.tap(vehicle_id):
+	if targeting:
+		vehicle_targeted.emit(vehicle_id)
+		return
+	_apply(_rules.tap(vehicle_id))
+
+
+func _apply(events: Array[GameEvent]) -> void:
+	for event: GameEvent in events:
 		_dispatch(event)
 	_play_pending()
 
@@ -176,12 +239,21 @@ func _play_pending() -> void:
 	while not _replay.is_empty():
 		await _play_event(_replay.next())
 	_playing = false
+	await _wait_for_moves()
+	if not _playing:
+		replay_finished.emit()
 
 
 func _play_event(event: GameEvent) -> void:
 	match event.type:
-		GameEvent.Type.MOVED:
+		GameEvent.Type.MOVED, GameEvent.Type.FLEW:
 			_start_move(event)
+		GameEvent.Type.QUEUE_REORDERED:
+			_queue_view.replace_remaining(event.blocks)
+		GameEvent.Type.RESCUE_NEEDED:
+			await _wait_for_moves()
+			if is_blocked():
+				rescue_needed.emit()
 		GameEvent.Type.BOARDED:
 			await _play_boarding(event)
 		GameEvent.Type.DEPARTED:
@@ -201,6 +273,11 @@ func _play_event(event: GameEvent) -> void:
 func _start_move(event: GameEvent) -> void:
 	var vehicle: LevelVehicle = _level.vehicles[event.vehicle_id]
 	_station_view.vehicle_arrived(event.slot, vehicle.dest)
+	if event.type == GameEvent.Type.FLEW:
+		_moving += 1
+		await _vehicles[event.vehicle_id].fly_to(layout.slot_world(event.slot), _config.coxeur_flight_duration, _config.coxeur_arc_height, _palette.shadow_material)
+		_moving -= 1
+		return
 	var path: Curve3D = ExitPath.build(layout, vehicle, event.slot)
 	var duration: float = clampf(path.get_baked_length() / _config.exit_speed, _config.exit_min_duration, _config.exit_max_duration)
 	_moving += 1

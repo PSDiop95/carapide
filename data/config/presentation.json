@@ -17,5 +17,7 @@
   "zoom_max": 1.8,
   "zoom_wheel_step": 1.1,
   "queue_chip_count": 3,
-  "queue_sign_count": 6
+  "queue_sign_count": 6,
+  "coxeur_flight_duration": 0.7,
+  "coxeur_arc_height": 3.0
 }

@@ -2,6 +2,7 @@ class_name ViewPalette
 extends RefCounted
 ## Meshes et matériaux partagés, pour rester sous le budget de draw calls.
 
+const SHADOW_COLOR: Color = Color(0.0, 0.0, 0.0, 0.35)
 const ARROW_SHAFT_LENGTH: float = 0.6
 const ARROW_SHAFT_HALF_WIDTH: float = 0.09
 const ARROW_HEAD_LENGTH: float = 0.45
@@ -16,6 +17,7 @@ var arrow_mesh: ArrayMesh = _build_arrow_mesh()
 var arrow_material: StandardMaterial3D = _flat_material(Color.WHITE)
 var highlight_material: StandardMaterial3D = _flat_material(HIGHLIGHT_COLOR)
 var picto_material: StandardMaterial3D = _picto_material()
+var shadow_material: StandardMaterial3D = _shadow_material()
 
 var _config: PresentationConfig
 var _dest_materials: Dictionary[String, StandardMaterial3D] = {}
@@ -25,6 +27,14 @@ var _picto_meshes: Dictionary[String, ArrayMesh] = {}
 
 func _init(config: PresentationConfig) -> void:
 	_config = config
+
+
+static func _shadow_material() -> StandardMaterial3D:
+	var material: StandardMaterial3D = StandardMaterial3D.new()
+	material.albedo_color = SHADOW_COLOR
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	return material
 
 
 func dest_material(dest: String) -> StandardMaterial3D:

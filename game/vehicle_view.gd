@@ -17,6 +17,8 @@ const COUNT_LABEL_FONT_SIZE: int = 64
 const COUNT_LABEL_OUTLINE: int = 18
 const COUNT_LABEL_GAP: float = 0.35
 const PARKED_LABEL_Y: float = 0.02
+const SHADOW_Y: float = 0.03
+const SHADOW_MIN_SCALE: float = 0.5
 
 var is_parked: bool = false
 
@@ -26,13 +28,16 @@ var _picto: MeshInstance3D = MeshInstance3D.new()
 var _count_label: Label3D = null
 var _capacity: int = 0
 var _length: float = 0.0
+var _width: float = 0.0
 var _highlight_material: Material
 var _path: Curve3D = null
+var _shadow: MeshInstance3D = null
 
 
 func setup(vehicle: LevelVehicle, world_position: Vector3, palette: ViewPalette) -> void:
 	_capacity = vehicle.capacity
 	_length = vehicle.length
+	_width = vehicle.width
 	_highlight_material = palette.highlight_material
 	position = world_position
 	_body.mesh = palette.body_mesh(vehicle.length, vehicle.width)
@@ -57,11 +62,18 @@ func drive_along(path: Curve3D, duration: float) -> void:
 	var tween: Tween = create_tween()
 	tween.tween_method(_follow_path, 0.0, path.get_baked_length(), duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	await tween.finished
-	_set_heading(PARKED_ANGLE)
-	_arrow.visible = false
-	_show_remaining(_capacity)
-	is_parked = true
-	parked.emit()
+	_finish_parking()
+
+
+## Vol du Coxeur : arc en cloche, ombre au sol qui rétrécit avec la hauteur.
+func fly_to(target: Vector3, duration: float, arc_height: float, shadow_material: Material) -> void:
+	_add_shadow(shadow_material)
+	var start: Vector3 = position
+	var tween: Tween = create_tween()
+	tween.tween_method(_fly_step.bind(start, target, arc_height, rotation.y), 0.0, 1.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	await tween.finished
+	_shadow.queue_free()
+	_finish_parking()
 
 
 func set_loaded(loaded: int) -> void:
@@ -91,6 +103,33 @@ func highlight(duration: float) -> void:
 	var tween: Tween = create_tween()
 	tween.tween_interval(duration)
 	tween.tween_callback(_restore_material.bind(normal))
+
+
+func _fly_step(progress: float, start: Vector3, target: Vector3, arc_height: float, start_heading: float) -> void:
+	var height: float = arc_height * sin(PI * progress)
+	position = start.lerp(target, progress) + Vector3.UP * height
+	_set_heading(lerp_angle(start_heading, PARKED_ANGLE, progress))
+	_shadow.position.y = SHADOW_Y - height
+	var ratio: float = 1.0 - (1.0 - SHADOW_MIN_SCALE) * height / maxf(arc_height, 0.001)
+	_shadow.scale = Vector3(ratio, 1.0, ratio)
+
+
+func _add_shadow(material: Material) -> void:
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(_length, _width)
+	_shadow = MeshInstance3D.new()
+	_shadow.mesh = plane
+	_shadow.material_override = material
+	_shadow.position.y = SHADOW_Y
+	add_child(_shadow)
+
+
+func _finish_parking() -> void:
+	_set_heading(PARKED_ANGLE)
+	_arrow.visible = false
+	_show_remaining(_capacity)
+	is_parked = true
+	parked.emit()
 
 
 func _follow_path(distance: float) -> void:
