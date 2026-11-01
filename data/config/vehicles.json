@@ -1,0 +1,8 @@
+{
+  "taxi": {"capacity": 4, "length": 2.0, "width": 0.9},
+  "clando": {"capacity": 4, "length": 2.0, "width": 0.9},
+  "car_rapide": {"capacity": 8, "length": 3.0, "width": 0.9},
+  "ndiaga_ndiaye": {"capacity": 12, "length": 4.0, "width": 0.9},
+  "tata": {"capacity": 12, "length": 4.0, "width": 0.9},
+  "moto_jakarta": {"capacity": 2, "length": 1.0, "width": 0.9}
+}
