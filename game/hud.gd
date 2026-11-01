@@ -41,10 +41,10 @@ func configure(config: PresentationConfig) -> void:
 
 
 func _ready() -> void:
-	_build_level_button()
 	_build_chips()
 	_add_top_label(_passengers_label, Control.PRESET_TOP_RIGHT, HORIZONTAL_ALIGNMENT_RIGHT)
 	_build_end_screen()
+	_build_level_button()
 	add_child(playtest_panel)
 	playtest_panel.new_tester_requested.connect(new_tester_requested.emit)
 	if OS.is_debug_build():
