@@ -14,9 +14,9 @@ Release, installation neuve, 1er lancement (cache froid) pour FPS, RAM et draw c
 | 2026-11-01 | 8b02199 | F5 Station et Roue (avant correctif plein écran) | 143.7 | 2303 | 90.0 | 60.0 | 313 | 117 | A23 3,6 Go (pas la réf. 2 Go) |
 | 2026-11-01 | 72da941 | F5 Station et Roue | 143.7 | 2383 | 89.6 | 60.0 | 306 | 117 | A23 3,6 Go (pas la réf. 2 Go) |
 | 2026-11-01 | 72da941 | Contrôle niveau 14, hors mesure du prompt (rouge : draw calls) | 143.7 | 2331 | 72.0 | 59.1 | 330 | 123 | A23 3,6 Go (pas la réf. 2 Go) |
+| 2026-11-01 | a706564 | Toit fondu, niveau 10 | 143.7 | 2407 | 73.3 | 55.3 | 328 | 100 | A23 3,6 Go (pas la réf. 2 Go) |
 | 2026-11-01 | a706564 | Toit fondu, contrôle niveau 14 | 143.7 | 2360 | 73.3 | 60.0 | 327 | 107 | A23 3,6 Go (pas la réf. 2 Go) |
 
 Notes :
 - F1 et F2 : démarrage faussé, le témoin de sonde n'était pas supprimé (chemin réécrit par MSYS), ces démarrages chargeaient le niveau 10. Chiffres fiables à partir de F3.
 - F3 : p5 en baisse (47,4 contre 67,3) dû à l'effet mesuré, qui reconstruit le niveau toutes les 4,8 s. Démarrage +350 ms : prix de la police MSDF, qui retire 38 Mo de mémoire vidéo.
-| 2026-11-01 | a706564 | Toit fondu, niveau 10 | 143.7 | 2407 | 73.3 | 55.3 | 328 | 100 | A23 3,6 Go (pas la réf. 2 Go) |
