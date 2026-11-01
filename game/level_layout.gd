@@ -5,7 +5,7 @@ extends RefCounted
 
 const SLOT_SPACING: float = 1.75
 const STATION_Z: float = -3.0
-const QUEUE_Z: float = -6.0
+const QUEUE_Z: float = -7.2
 const QUEUE_CELL: float = 0.5
 const QUEUE_ROWS: int = 4
 const QUEUE_ROW_PITCH: float = 0.75
@@ -13,6 +13,8 @@ const HEAD_MARKER_OFFSET: float = 0.6
 const SCENE_MARGIN: float = 1.0
 const MIN_SCENE_WIDTH: float = 8.0
 const ROOF_HEIGHT: float = 0.6
+## Bande réservée en haut de scène aux libellés et pancartes de la file.
+const HUD_RESERVED_Z: float = 3.2
 
 var board_width: float
 var board_height: float
@@ -67,22 +69,8 @@ func head_marker_world() -> Vector3:
 
 
 func top_z() -> float:
-	return QUEUE_Z - float(QUEUE_ROWS) * QUEUE_ROW_PITCH - SCENE_MARGIN
+	return QUEUE_Z - float(QUEUE_ROWS) * QUEUE_ROW_PITCH - SCENE_MARGIN - HUD_RESERVED_Z
 
 
 func bottom_z() -> float:
 	return board_height + SCENE_MARGIN
-
-
-## Point du bord du plateau atteint en suivant la flèche, avant-train dehors.
-func exit_point(vehicle: LevelVehicle) -> Vector3:
-	var box: OrientedBox = OrientedBox.from_vehicle(vehicle)
-	var to_edge: float = INF
-	if not is_zero_approx(box.dir_x):
-		var edge_x: float = board_width if box.dir_x > 0.0 else 0.0
-		to_edge = minf(to_edge, (edge_x - vehicle.pos_x) / box.dir_x)
-	if not is_zero_approx(box.dir_y):
-		var edge_y: float = board_height if box.dir_y > 0.0 else 0.0
-		to_edge = minf(to_edge, (edge_y - vehicle.pos_y) / box.dir_y)
-	var travel: float = to_edge + vehicle.length * 0.5
-	return board_to_world(vehicle.pos_x + box.dir_x * travel, vehicle.pos_y + box.dir_y * travel)

@@ -1,10 +1,10 @@
 {
-  "colobane": "#d9302c",
-  "petersen": "#2a6fdb",
-  "parcelles": "#2fa84f",
-  "pikine": "#f2c81e",
-  "rufisque": "#f07f13",
-  "plateau": "#8a3fd1",
-  "guediawaye": "#ec5fa8",
-  "yoff": "#27c4d9"
+  "colobane": {"color": "#d9302c", "picto": "circle", "name_key": "DEST_COLOBANE"},
+  "petersen": {"color": "#2a6fdb", "picto": "square", "name_key": "DEST_PETERSEN"},
+  "parcelles": {"color": "#2fa84f", "picto": "triangle", "name_key": "DEST_PARCELLES"},
+  "pikine": {"color": "#f2c81e", "picto": "star", "name_key": "DEST_PIKINE"},
+  "rufisque": {"color": "#f07f13", "picto": "diamond", "name_key": "DEST_RUFISQUE"},
+  "plateau": {"color": "#8a3fd1", "picto": "cross", "name_key": "DEST_PLATEAU"},
+  "guediawaye": {"color": "#ec5fa8", "picto": "heart", "name_key": "DEST_GUEDIAWAYE"},
+  "yoff": {"color": "#27c4d9", "picto": "hexagon", "name_key": "DEST_YOFF"}
 }

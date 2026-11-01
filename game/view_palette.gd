@@ -8,14 +8,19 @@ const ARROW_HEAD_LENGTH: float = 0.45
 const ARROW_HEAD_HALF_WIDTH: float = 0.3
 const HIGHLIGHT_COLOR: Color = Color(1.0, 1.0, 1.0)
 const OUTLINE_LENGTH_GAP: float = 0.08
+const PICTO_OUTLINE_SCALE: float = 1.3
+const PICTO_OUTLINE_COLOR: Color = Color(0.05, 0.05, 0.05)
+const PICTO_INNER_LIFT: float = 0.004
 
 var arrow_mesh: ArrayMesh = _build_arrow_mesh()
 var arrow_material: StandardMaterial3D = _flat_material(Color.WHITE)
 var highlight_material: StandardMaterial3D = _flat_material(HIGHLIGHT_COLOR)
+var picto_material: StandardMaterial3D = _picto_material()
 
 var _config: PresentationConfig
 var _dest_materials: Dictionary[String, StandardMaterial3D] = {}
 var _body_meshes: Dictionary[String, BoxMesh] = {}
+var _picto_meshes: Dictionary[String, ArrayMesh] = {}
 
 
 func _init(config: PresentationConfig) -> void:
@@ -37,6 +42,39 @@ func body_mesh(length: float, width: float) -> BoxMesh:
 		mesh.size = Vector3(length - OUTLINE_LENGTH_GAP, VehicleView.HEIGHT, width)
 		_body_meshes[key] = mesh
 	return _body_meshes[key]
+
+
+## Pictogramme de la destination : blanc cerné de sombre, à plat, rayon 1, une seule surface.
+func picto_mesh(dest: String) -> ArrayMesh:
+	var shape: String = _config.picto_of(dest)
+	if not _picto_meshes.has(shape):
+		_picto_meshes[shape] = _build_picto_mesh(PictoShapes.points(shape))
+	return _picto_meshes[shape]
+
+
+static func _picto_material() -> StandardMaterial3D:
+	var material: StandardMaterial3D = _flat_material(Color.WHITE)
+	material.vertex_color_use_as_albedo = true
+	return material
+
+
+static func _build_picto_mesh(outline: PackedVector2Array) -> ArrayMesh:
+	var triangles: PackedInt32Array = Geometry2D.triangulate_polygon(outline)
+	var points: PackedVector3Array = PackedVector3Array()
+	var colors: PackedColorArray = PackedColorArray()
+	for index: int in triangles:
+		points.append(Vector3(outline[index].x * PICTO_OUTLINE_SCALE, 0.0, -outline[index].y * PICTO_OUTLINE_SCALE))
+		colors.append(PICTO_OUTLINE_COLOR)
+	for index: int in triangles:
+		points.append(Vector3(outline[index].x, PICTO_INNER_LIFT, -outline[index].y))
+		colors.append(Color.WHITE)
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = points
+	arrays[Mesh.ARRAY_COLOR] = colors
+	var mesh: ArrayMesh = ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
 
 
 static func _flat_material(color: Color) -> StandardMaterial3D:
