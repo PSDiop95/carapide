@@ -1,16 +1,116 @@
 {
-  "id": 1,
-  "slots": 4,
-  "board": [8, 8],
-  "vehicles": [
-    {"type": "taxi", "dest": "colobane", "pos": [1.5, 6], "angle": 90},
-    {"type": "car_rapide", "dest": "petersen", "pos": [1.5, 2.5], "angle": 90},
-    {"type": "taxi", "dest": "petersen", "pos": [4, 5], "angle": 45},
-    {"type": "car_rapide", "dest": "colobane", "pos": [6.5, 3], "angle": 180}
+  "board": [
+    7.0,
+    7.0
   ],
+  "id": 1,
   "queue": [
-    {"dest": "colobane", "count": 4},
-    {"dest": "petersen", "count": 12},
-    {"dest": "colobane", "count": 8}
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "colobane"
+    },
+    {
+      "count": 8,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "colobane"
+    },
+    {
+      "count": 8,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    }
+  ],
+  "slots": 4,
+  "vehicles": [
+    {
+      "angle": 180.0,
+      "dest": "colobane",
+      "pos": [
+        2.5,
+        2.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 0.0,
+      "dest": "petersen",
+      "pos": [
+        2.0,
+        4.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 270.0,
+      "dest": "colobane",
+      "pos": [
+        5.5,
+        1.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 180.0,
+      "dest": "petersen",
+      "pos": [
+        2.0,
+        6.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 90.0,
+      "dest": "colobane",
+      "pos": [
+        6.5,
+        5.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 90.0,
+      "dest": "petersen",
+      "pos": [
+        4.0,
+        4.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 90.0,
+      "dest": "colobane",
+      "pos": [
+        5.5,
+        5.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 270.0,
+      "dest": "petersen",
+      "pos": [
+        3.5,
+        1.0
+      ],
+      "type": "taxi"
+    }
   ]
 }

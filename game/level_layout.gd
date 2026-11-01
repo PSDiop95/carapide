@@ -8,6 +8,8 @@ const STATION_Z: float = -3.0
 const QUEUE_Z: float = -6.0
 const QUEUE_CELL: float = 0.5
 const QUEUE_ROWS: int = 4
+const QUEUE_ROW_PITCH: float = 0.75
+const HEAD_MARKER_OFFSET: float = 0.6
 const SCENE_MARGIN: float = 1.0
 const MIN_SCENE_WIDTH: float = 8.0
 const ROOF_HEIGHT: float = 0.6
@@ -56,11 +58,16 @@ func queue_world(index: int) -> Vector3:
 	if row % 2 == 1:
 		column = columns - 1 - column
 	var x: float = (float(column) - float(columns - 1) * 0.5) * QUEUE_CELL
-	return Vector3(x, 0.0, QUEUE_Z - float(row) * QUEUE_CELL)
+	return Vector3(x, 0.0, QUEUE_Z - float(row) * QUEUE_ROW_PITCH)
+
+
+## Repère de tête de file, juste devant le premier passager, côté gare.
+func head_marker_world() -> Vector3:
+	return queue_world(0) + Vector3.BACK * HEAD_MARKER_OFFSET
 
 
 func top_z() -> float:
-	return QUEUE_Z - float(QUEUE_ROWS) * QUEUE_CELL - SCENE_MARGIN
+	return QUEUE_Z - float(QUEUE_ROWS) * QUEUE_ROW_PITCH - SCENE_MARGIN
 
 
 func bottom_z() -> float:

@@ -1,3 +1,14 @@
 {
-  "order": ["level_01.json"]
+  "order": [
+    "level_01.json",
+    "level_02.json",
+    "level_03.json",
+    "level_04.json",
+    "level_05.json",
+    "level_06.json",
+    "level_07.json",
+    "level_08.json",
+    "level_09.json",
+    "level_10.json"
+  ]
 }

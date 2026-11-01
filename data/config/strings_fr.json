@@ -1,0 +1,10 @@
+{
+  "LEVEL_LABEL": "Niveau %d",
+  "PASSENGERS_LABEL": "%d passagers",
+  "WON_TITLE": "Bravo !",
+  "LOST_TITLE": "Gare pleine !",
+  "ALL_DONE_TITLE": "Tous les niveaux finis !",
+  "NEXT_BUTTON": "Suivant",
+  "RETRY_BUTTON": "Recommencer",
+  "REPLAY_BUTTON": "Rejouer"
+}

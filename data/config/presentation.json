@@ -6,7 +6,7 @@
   "bump_duration": 0.2,
   "boarding_rate": 8.0,
   "depart_duration": 0.5,
-  "tap_tolerance": 0.15,
+  "tap_tolerance": 0.3,
   "danger_warning_free_slots": 1,
   "danger_critical_free_slots": 0
 }
