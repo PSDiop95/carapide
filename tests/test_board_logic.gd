@@ -126,6 +126,12 @@ func test_mutual_blockers_are_rejected() -> void:
 	assert_string_contains(result.errors[0], "aucun ordre de sortie")
 
 
+func test_vehicle_at_prefers_exact_hit_over_closer_center_in_tolerance() -> void:
+	var board: BoardLogic = BoardLogic.new(_level([[5, 2.5, 90], [6, 5.5, 0]]))
+	# Point dans le bout du car 0, plus près du centre du car 1 élargi.
+	assert_eq(board.vehicle_at(5.4, 3.9, 0.5), 0)
+
+
 func test_vehicle_at_finds_remaining_vehicle_with_tolerance() -> void:
 	var board: BoardLogic = BoardLogic.new(_level([[5, 5, 90]]))
 	assert_eq(board.vehicle_at(5.0, 6.0, 0.0), 0)

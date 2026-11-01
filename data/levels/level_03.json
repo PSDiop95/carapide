@@ -1,0 +1,142 @@
+{
+  "board": [
+    8.0,
+    8.0
+  ],
+  "id": 3,
+  "queue": [
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "colobane"
+    },
+    {
+      "count": 8,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    },
+    {
+      "count": 8,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "colobane"
+    },
+    {
+      "count": 8,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    }
+  ],
+  "slots": 4,
+  "vehicles": [
+    {
+      "angle": 225.0,
+      "dest": "colobane",
+      "pos": [
+        6.5,
+        4.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 315.0,
+      "dest": "petersen",
+      "pos": [
+        3.5,
+        5.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 270.0,
+      "dest": "colobane",
+      "pos": [
+        4.0,
+        2.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 270.0,
+      "dest": "petersen",
+      "pos": [
+        0.5,
+        6.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 135.0,
+      "dest": "colobane",
+      "pos": [
+        4.5,
+        6.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 270.0,
+      "dest": "petersen",
+      "pos": [
+        1.5,
+        6.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 270.0,
+      "dest": "colobane",
+      "pos": [
+        3.0,
+        2.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 270.0,
+      "dest": "petersen",
+      "pos": [
+        2.0,
+        3.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 0.0,
+      "dest": "colobane",
+      "pos": [
+        6.0,
+        1.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 270.0,
+      "dest": "petersen",
+      "pos": [
+        1.0,
+        1.5
+      ],
+      "type": "taxi"
+    }
+  ]
+}

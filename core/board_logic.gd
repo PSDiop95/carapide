@@ -59,8 +59,14 @@ func blockers_of(vehicle_id: int) -> PackedInt32Array:
 	return _blockers[vehicle_id]
 
 
-## Véhicule restant sous un point du plateau ; `tolerance` élargit la zone tactile.
+## Véhicule restant sous un point du plateau. Un contact exact prime ; sinon `tolerance`
+## élargit la zone tactile et le centre le plus proche l'emporte.
 func vehicle_at(x: float, y: float, tolerance: float) -> int:
+	var exact: int = _nearest_at(x, y, 0.0)
+	return exact if exact != NO_VEHICLE else _nearest_at(x, y, tolerance)
+
+
+func _nearest_at(x: float, y: float, tolerance: float) -> int:
 	var best_id: int = NO_VEHICLE
 	var best_distance: float = INF
 	for id: int in _boxes.size():
