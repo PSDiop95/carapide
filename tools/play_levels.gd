@@ -64,6 +64,7 @@ func _run() -> void:
 		await _check_defeat_then_retry(number)
 		if _boosters and number == RESCUE_LEVEL:
 			await _check_rescue(number)
+			await _check_garage(number)
 		await _play_solution(number)
 		_expect(_main.hud.result_title.text != tr("LOST_TITLE"), "Niveau %d perdu avec la solution" % number)
 		_capture("level_%02d_end" % number)
@@ -182,8 +183,18 @@ func _vehicle_of_another_destination() -> int:
 	return rules.free_vehicles()[0]
 
 
-func _first_on_board() -> int:
-	return _main.view.tutorial_vehicle()
+## Un véhicule à l'écran qu'aucun bouton de la pop-up ne recouvre.
+func _vehicle_point_outside_popup_buttons() -> Vector2:
+	var popup: BlockedPopup = _flow().popup
+	for vehicle: LevelVehicle in _main.current_level.vehicles:
+		var point: Vector2 = _main.view.vehicle_screen_position(vehicle)
+		var on_button: bool = false
+		for button: Button in [popup.advice_button, popup.garage_button, popup.restart_button]:
+			on_button = on_button or button.get_global_rect().has_point(point)
+		if not on_button:
+			return point
+	_expect(false, "Tous les véhicules sont sous un bouton de la pop-up")
+	return Vector2.ZERO
 
 
 func _reload_level() -> void:
@@ -205,7 +216,7 @@ func _check_rescue(number: int) -> void:
 	_expect(_flow().popup.visible, "Niveau %d : pop-up absente" % number)
 	var inventory: BoosterInventory = _main.get_inventory()
 	var total_stock: int = inventory.stock(BoosterAccess.Kind.COXEUR) + inventory.stock(BoosterAccess.Kind.APPRENTI)
-	_tap(_main.view.vehicle_screen_position(_main.current_level.vehicles[_first_on_board()]))
+	_tap(_vehicle_point_outside_popup_buttons())
 	await _frames(2)
 	_expect(_main.view.is_blocked(), "Un tap sous la pop-up a agi sur le plateau")
 	await _click(_flow().popup.advice_button.get_global_rect().get_center())
@@ -214,6 +225,29 @@ func _check_rescue(number: int) -> void:
 	_expect(inventory.stock(BoosterAccess.Kind.COXEUR) + inventory.stock(BoosterAccess.Kind.APPRENTI) == total_stock - 1, "Stock : exactement un booster attendu")
 	_expect(not _main.view.is_blocked(), "Niveau %d toujours bloqué après le booster" % number)
 	_capture("rescue_after_advice")
+	await _settle_replay()
+	await _reload_level()
+
+
+## Gare bloquée, Garage par pub : la gare se vide, gagne une place, le jeu reprend.
+func _check_garage(number: int) -> void:
+	for vehicle_id: int in _naive_order():
+		_tap(_main.view.vehicle_screen_position(_main.current_level.vehicles[vehicle_id]))
+		await _frames(1)
+	await _wait_for_outcome()
+	_expect(_flow().popup.garage_button.visible, "Niveau %d : Garage non proposé" % number)
+	Engine.time_scale = 1.0
+	_capture("garage_popup")
+	await _click(_flow().popup.garage_button.get_global_rect().get_center())
+	_expect(_main.hud.is_ad_curtain_visible(), "Garage : pub non affichée")
+	for _frame: int in MAX_WAIT_FRAMES:
+		if not _main.hud.is_ad_curtain_visible():
+			break
+		await get_tree().process_frame
+	await _frames(SETTLE_FRAMES * 8)
+	_capture("garage_after")
+	Engine.time_scale = TIME_SCALE
+	_expect(not _main.view.is_blocked(), "Niveau %d : bloqué après le Garage" % number)
 	await _settle_replay()
 	await _reload_level()
 
@@ -317,7 +351,11 @@ func _check_defeat_then_retry(number: int) -> void:
 		var start: int = Time.get_ticks_msec()
 		_main.view.advise(_main.get_inventory())
 		_max_advice_ms = maxi(_max_advice_ms, Time.get_ticks_msec() - start)
-		await _click(_flow().popup.abandon_button.get_global_rect().get_center())
+		await _click(_flow().popup.restart_button.get_global_rect().get_center())
+		await _frames(SETTLE_FRAMES * 2)
+		_expect(Services.haptics.vibrations_ms.size() > vibrations, "Niveau %d : gare pleine sans vibration" % number)
+		_expect(not _main.hud.is_result_visible() and _main.view.is_playing(), "Niveau %d : Recommencer n'a pas relancé" % number)
+		return
 	await _wait_for_result()
 	_expect(Services.haptics.vibrations_ms.size() > vibrations, "Niveau %d : gare pleine sans vibration" % number)
 	_expect(_main.hud.result_title.text == tr("LOST_TITLE"), "Niveau %d : écran de défaite absent" % number)

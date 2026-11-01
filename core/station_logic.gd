@@ -40,6 +40,14 @@ func parked_count() -> int:
 	return _parked.size()
 
 
+## Passagers à bord des véhicules garés.
+func loaded_total() -> int:
+	var total: int = 0
+	for parked: ParkedVehicle in _parked:
+		total += parked.loaded
+	return total
+
+
 ## Places normales encore libres.
 func free_slot_count() -> int:
 	var used: int = 0
@@ -72,6 +80,25 @@ func park_coxeur(vehicle_id: int, dest: String, capacity: int) -> ParkedVehicle:
 	return parked
 
 
+## Vide la gare et ajoute une place : la place Coxeur, vide elle aussi, se décale d'un rang.
+func evacuate_and_grow() -> Array[ParkedVehicle]:
+	var evacuated: Array[ParkedVehicle] = _parked
+	_parked = []
+	_slot_count += 1
+	coxeur_slot = _slot_count
+	return evacuated
+
+
+func total_slots() -> int:
+	return _slot_count
+
+
+## Remet un véhicule du Garage à la première place libre. La gare ne doit pas être pleine.
+func park_returning(parked: ParkedVehicle) -> void:
+	parked.slot = first_free_slot()
+	_parked.append(parked)
+
+
 ## Passagers manquants de chaque véhicule garé, places de gauche à droite.
 func needs_by_slot() -> Array[QueueBlock]:
 	var needs: Array[QueueBlock] = []
@@ -97,7 +124,7 @@ func state_key() -> String:
 		by_dest[parked.dest] = by_dest.get(parked.dest, "") + "%d,%d;" % [parked.capacity, parked.loaded]
 	var dests: Array[String] = by_dest.keys()
 	dests.sort()
-	var key: String = "x" if is_coxeur_free() else "c"
+	var key: String = "%d%s" % [_slot_count, "x" if is_coxeur_free() else "c"]
 	for dest: String in dests:
 		key += "%s=%s" % [dest, by_dest[dest]]
 	return key

@@ -146,14 +146,18 @@ func _booster_wins(rules: GameRules, budget: int) -> bool:
 			return true
 	for id: int in _head_first(rules, rules.board_vehicles()):
 		if not rules.can_use_coxeur(id):
-			return false
+			break
 		var clone: GameRules = rules.copy()
 		clone.use_coxeur(id)
 		if _can_win(clone, budget):
 			return true
 		if _aborted():
 			return false
-	return false
+	if not rules.can_use_garage():
+		return false
+	var with_garage: GameRules = rules.copy()
+	with_garage.use_garage()
+	return _can_win(with_garage, budget)
 
 
 func _head_first(rules: GameRules, ids: PackedInt32Array) -> PackedInt32Array:

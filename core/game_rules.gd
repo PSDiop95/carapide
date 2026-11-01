@@ -12,6 +12,8 @@ var _board: BoardLogic
 var _station: StationLogic
 var _queue: QueueLogic
 var _access: BoosterAccess
+var _garage: GarageLogic = GarageLogic.new()
+var _garage_uses: int = 0
 ## Destination courante de chaque véhicule : le Dioulé la remplace, jamais en place (les copies la partagent).
 var _dests: PackedStringArray = PackedStringArray()
 ## Vide tant qu'aucun Dioulé n'a été joué : la clé d'état reste courte pour le solveur.
@@ -36,6 +38,8 @@ func copy(access: BoosterAccess = _access) -> GameRules:
 	clone._board = _board.copy()
 	clone._station = _station.copy()
 	clone._queue = _queue.copy()
+	clone._garage = _garage.copy()
+	clone._garage_uses = _garage_uses
 	clone._dests = _dests
 	clone._dest_key = _dest_key
 	return clone
@@ -56,7 +60,7 @@ func with_reserved_slots(count: int) -> GameRules:
 
 
 func state_key() -> String:
-	return "%s|%s|%s|%s" % [_board.state_key(), _station.state_key(), _queue.state_key(), _dest_key]
+	return "%s|%s|%s|%s|%s" % [_board.state_key(), _station.state_key(), _queue.state_key(), _dest_key, _garage.state_key()]
 
 
 func tap(vehicle_id: int) -> Array[GameEvent]:
@@ -113,6 +117,21 @@ func use_dioule(dests: PackedStringArray) -> Array[GameEvent]:
 	return events
 
 
+## Les véhicules garés rejoignent le Garage avec leurs passagers ; la gare gagne une place.
+func use_garage() -> Array[GameEvent]:
+	var events: Array[GameEvent] = []
+	if not can_use_garage():
+		return events
+	var ids: PackedInt32Array = PackedInt32Array()
+	for parked: ParkedVehicle in _station.evacuate_and_grow():
+		_garage.store(parked)
+		ids.append(parked.vehicle_id)
+	_garage_uses += 1
+	events.append(GameEvent.garaged(ids, _station.total_slots()))
+	_resume(events)
+	return events
+
+
 ## Refus explicite des boosters.
 func abandon() -> Array[GameEvent]:
 	var events: Array[GameEvent] = []
@@ -128,6 +147,10 @@ func can_use_coxeur(vehicle_id: int) -> bool:
 
 func can_use_apprenti() -> bool:
 	return _accepts_booster() and _queue.would_reorder(_station.needs_by_slot())
+
+
+func can_use_garage() -> bool:
+	return status == Status.BLOCKED and _garage_helps()
 
 
 ## Gare bloquée : le bouchon ne peut plus rien pour elle, mélanger ne sauverait pas la partie.
@@ -152,9 +175,23 @@ func free_slot_count() -> int:
 ## Lecture seule : sièges libres restants par destination, bouchon et gare. Égal à la file à tout instant.
 func seats_left_by_dest() -> Dictionary[String, int]:
 	var totals: Dictionary[String, int] = _station.free_seats_by_dest()
+	_garage.add_free_seats_to(totals)
 	for id: int in _board.remaining_vehicles():
 		totals[_dests[id]] = totals.get(_dests[id], 0) + vehicle_capacity(id)
 	return totals
+
+
+## Lecture seule : passagers assis dans les véhicules encore là, gare et Garage.
+func passengers_aboard() -> int:
+	return _station.loaded_total() + _garage.loaded_total()
+
+
+func garage_size() -> int:
+	return _garage.size()
+
+
+func slot_count() -> int:
+	return _station.total_slots()
 
 
 func passengers_left_by_dest() -> Dictionary[String, int]:
@@ -219,6 +256,8 @@ func _resolve_boarding(events: Array[GameEvent]) -> void:
 	while not _queue.is_empty():
 		var parked: ParkedVehicle = _station.oldest_for(_queue.head_dest())
 		if parked == null:
+			parked = _recall_for_head(events)
+		if parked == null:
 			return
 		var amount: int = _queue.take(parked.free_seats())
 		parked.loaded += amount
@@ -226,6 +265,17 @@ func _resolve_boarding(events: Array[GameEvent]) -> void:
 		if parked.is_full():
 			_station.depart(parked)
 			events.append(GameEvent.departed(parked))
+
+
+## Une place libre et un véhicule du Garage attendu en tête : le plus rempli revient.
+func _recall_for_head(events: Array[GameEvent]) -> ParkedVehicle:
+	if _station.is_full():
+		return null
+	var parked: ParkedVehicle = _garage.take_fullest(_queue.head_dest())
+	if parked != null:
+		_station.park_returning(parked)
+		events.append(GameEvent.recalled(parked))
+	return parked
 
 
 func _resume(events: Array[GameEvent]) -> void:
@@ -243,7 +293,7 @@ func _update_status(events: Array[GameEvent]) -> void:
 		status = Status.WON
 		events.append(GameEvent.new(GameEvent.Type.WON))
 	elif _station.is_full() or not _board.any_can_exit():
-		var rescuable: bool = _coxeur_can_rescue() or _apprenti_can_rescue()
+		var rescuable: bool = _coxeur_can_rescue() or _apprenti_can_rescue() or _garage_can_rescue()
 		status = Status.BLOCKED if rescuable else Status.LOST
 		events.append(GameEvent.new(GameEvent.Type.RESCUE_NEEDED if rescuable else GameEvent.Type.LOST))
 
@@ -255,6 +305,17 @@ func _coxeur_can_rescue() -> bool:
 
 func _apprenti_can_rescue() -> bool:
 	return _access.can_obtain(BoosterAccess.Kind.APPRENTI) and _queue.would_reorder(_station.needs_by_slot())
+
+
+func _garage_can_rescue() -> bool:
+	return _access.can_obtain(BoosterAccess.Kind.GARAGE) and _garage_helps()
+
+
+## Gare vide après coup : utile seulement si un véhicule peut alors la rejoindre.
+func _garage_helps() -> bool:
+	if _garage_uses >= _access.garage_max_uses() or not _station.is_full():
+		return false
+	return _board.any_can_exit() or _garage.has_dest(_queue.head_dest())
 
 
 static func _blank(level: LevelData, access: BoosterAccess) -> GameRules:

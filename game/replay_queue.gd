@@ -9,7 +9,7 @@ var _busy_slots: Dictionary[int, bool] = {}
 
 ## Vrai si l'événement doit être rejoué tout de suite, sans attendre la file.
 func add(event: GameEvent) -> bool:
-	if _is_arrival(event) and not _is_slot_taken(event.slot):
+	if _can_skip_queue(event) and not _is_slot_taken(event.slot):
 		_busy_slots[event.slot] = true
 		return true
 	_pending.append(event)
@@ -27,11 +27,18 @@ func next() -> GameEvent:
 		_busy_slots[event.slot] = true
 	elif event.type == GameEvent.Type.DEPARTED:
 		_busy_slots.erase(event.slot)
+	elif event.type == GameEvent.Type.GARAGED:
+		_busy_slots.clear()
 	return event
 
 
-static func _is_arrival(event: GameEvent) -> bool:
+## Le retour du Garage reste dans l'ordre : il suit l'évacuation.
+static func _can_skip_queue(event: GameEvent) -> bool:
 	return event.type == GameEvent.Type.MOVED or event.type == GameEvent.Type.FLEW
+
+
+static func _is_arrival(event: GameEvent) -> bool:
+	return _can_skip_queue(event) or event.type == GameEvent.Type.RECALLED
 
 
 func _is_slot_taken(slot: int) -> bool:

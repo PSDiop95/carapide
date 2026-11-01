@@ -5,9 +5,16 @@ extends Node
 
 signal booster_used(kind: BoosterAccess.Kind)
 signal level_blocked
+signal restart_requested
 
 const VEHICLE_TARGET_SIZE: Vector2 = Vector2(150.0, 150.0)
 const MEASURE_EFFECT_PERIOD: int = 6
+const NAME_KEYS: Dictionary[BoosterAccess.Kind, String] = {
+	BoosterAccess.Kind.COXEUR: "BOOSTER_COXEUR",
+	BoosterAccess.Kind.APPRENTI: "BOOSTER_APPRENTI",
+	BoosterAccess.Kind.DIOULE: "BOOSTER_DIOULE",
+	BoosterAccess.Kind.GARAGE: "BOOSTER_GARAGE",
+}
 
 var bar: BoosterBar = BoosterBar.new()
 var popup: BlockedPopup = BlockedPopup.new()
@@ -34,7 +41,8 @@ func setup(inventory: BoosterInventory, hud: Hud) -> void:
 	hud.booster_layer.add_child(tutorial)
 	bar.booster_pressed.connect(_on_bar_pressed)
 	popup.advice_pressed.connect(_on_advice_pressed)
-	popup.abandon_pressed.connect(_on_abandon_pressed)
+	popup.garage_pressed.connect(_on_garage_pressed)
+	popup.restart_pressed.connect(_on_restart_pressed)
 	tutorial.target_pressed.connect(_on_tutorial_target_pressed)
 
 
@@ -131,6 +139,8 @@ func _use(kind: BoosterAccess.Kind, vehicle_id: int) -> void:
 			view.play_apprenti()
 		BoosterAccess.Kind.DIOULE:
 			view.play_dioule(_pending_mix)
+		BoosterAccess.Kind.GARAGE:
+			view.play_garage()
 		_:
 			view.play_coxeur(vehicle_id)
 
@@ -143,12 +153,16 @@ func _on_rescue_needed() -> void:
 func _open_popup() -> void:
 	_set_targeting(false)
 	_view.input_enabled = false
+	var start: int = Time.get_ticks_usec()
 	_advice = _view.advise(_inventory)
-	var text: String = ""
-	if _advice != null:
-		var offer: String = BoosterBar.offer_text(_inventory, _advice.kind)
-		text = tr("BOOSTER_OFFER") % [tr(BoosterBar.NAME_KEYS[_advice.kind]), offer]
-	popup.open(text)
+	PerfProbe.record_effect_ms(float(Time.get_ticks_usec() - start) * 0.001)
+	var advice_text: String = "" if _advice == null else _offer_label(_advice.kind)
+	var garage_usable: bool = _view.can_use_garage() and _inventory.can_obtain(BoosterAccess.Kind.GARAGE)
+	popup.open(advice_text, _offer_label(BoosterAccess.Kind.GARAGE) if garage_usable else "")
+
+
+func _offer_label(kind: BoosterAccess.Kind) -> String:
+	return tr("BOOSTER_OFFER") % [tr(NAME_KEYS[kind]), BoosterBar.offer_text(_inventory, kind)]
 
 
 func _on_advice_pressed() -> void:
@@ -172,13 +186,25 @@ func measure_effect(effect: String) -> bool:
 
 
 ## Mesure : sort de la pop-up sans passer par le toucher.
-func measure_resolve_popup(_effect: String) -> void:
-	_on_abandon_pressed()
+func measure_resolve_popup(effect: String) -> void:
+	if effect == "garage" and _view.can_use_garage():
+		popup.hide()
+		_view.input_enabled = true
+		_view.play_garage()
+	else:
+		_on_restart_pressed()
 
 
-func _on_abandon_pressed() -> void:
+func _on_garage_pressed() -> void:
 	popup.hide()
 	_view.input_enabled = true
+	_use(BoosterAccess.Kind.GARAGE, BoardLogic.NO_VEHICLE)
+
+
+func _on_restart_pressed() -> void:
+	popup.hide()
+	_view.input_enabled = true
+	restart_requested.emit()
 	_view.play_abandon()
 
 

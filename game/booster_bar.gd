@@ -8,6 +8,7 @@ const BOTTOM_MARGIN: float = 16.0
 const SEPARATION: int = 8
 const HINT_FONT_SIZE: int = 26
 const HINT_SECONDS: float = 2.0
+## Le Garage n'est pas dans la barre : il n'existe qu'en gare bloquée.
 const NAME_KEYS: Dictionary[BoosterAccess.Kind, String] = {
 	BoosterAccess.Kind.COXEUR: "BOOSTER_COXEUR",
 	BoosterAccess.Kind.APPRENTI: "BOOSTER_APPRENTI",

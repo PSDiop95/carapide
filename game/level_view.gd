@@ -43,6 +43,8 @@ var _gestures: GestureTracker
 var _zoom: CameraZoom
 var _frame_size: float = 0.0
 var _frame_position: Vector3 = Vector3.ZERO
+## Véhicules affichés dans la rangée Garage, dans l'ordre.
+var _garage_row: PackedInt32Array = PackedInt32Array()
 
 
 ## Sans `access` : partie sans booster, comportement du build de playtest A.
@@ -142,6 +144,14 @@ func compute_dioule(max_nodes: int) -> PackedStringArray:
 
 func play_dioule(dests: PackedStringArray) -> void:
 	_apply(_rules.use_dioule(dests))
+
+
+func can_use_garage() -> bool:
+	return _rules.can_use_garage()
+
+
+func play_garage() -> void:
+	_apply(_rules.use_garage())
 
 
 func play_abandon() -> void:
@@ -272,6 +282,10 @@ func _play_event(event: GameEvent) -> void:
 			_queue_view.replace_remaining(event.blocks)
 		GameEvent.Type.DESTINATIONS_CHANGED:
 			await _play_dioule(event)
+		GameEvent.Type.GARAGED:
+			await _play_garaged(event)
+		GameEvent.Type.RECALLED:
+			await _play_recalled(event)
 		GameEvent.Type.RESCUE_NEEDED:
 			await _wait_for_moves()
 			if is_blocked():
@@ -314,6 +328,27 @@ func _wait_for_moves() -> void:
 
 func _on_critical_entered() -> void:
 	Services.haptics.vibrate(_config.danger_vibration_ms)
+
+
+## La gare redessinée d'abord : les véhicules quittent des places qui n'existent plus.
+func _play_garaged(event: GameEvent) -> void:
+	_station_view.rebuild_after_garage(event.count)
+	_garage_row.append_array(event.garaged_ids)
+	_arrange_garage_row()
+	await get_tree().create_timer(_config.garage_move_duration).timeout
+
+
+func _play_recalled(event: GameEvent) -> void:
+	_garage_row.remove_at(_garage_row.find(event.vehicle_id))
+	_arrange_garage_row()
+	_station_view.vehicle_arrived(event.slot, event.dest)
+	await _vehicles[event.vehicle_id].return_from_garage(layout.slot_world(event.slot), _config.garage_move_duration)
+
+
+func _arrange_garage_row() -> void:
+	for index: int in _garage_row.size():
+		var target: Vector3 = layout.garage_world(index, _garage_row.size())
+		_vehicles[_garage_row[index]].move_to_garage(target, _config.garage_vehicle_scale, _config.garage_move_duration)
 
 
 ## Vague de gauche à droite ; aucun tap pendant le saut.

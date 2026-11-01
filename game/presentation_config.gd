@@ -29,6 +29,8 @@ var coxeur_arc_height: float = 0.0
 var dioule_wave_duration: float = 0.0
 var dioule_hop_duration: float = 0.0
 var dioule_hop_height: float = 0.0
+var garage_move_duration: float = 0.0
+var garage_vehicle_scale: float = 1.0
 var dest_colors: Dictionary[String, Color] = {}
 var dest_pictos: Dictionary[String, String] = {}
 var dest_name_keys: Dictionary[String, String] = {}
@@ -61,6 +63,8 @@ static func load_default() -> PresentationConfig:
 	config.dioule_wave_duration = raw["dioule_wave_duration"]
 	config.dioule_hop_duration = raw["dioule_hop_duration"]
 	config.dioule_hop_height = raw["dioule_hop_height"]
+	config.garage_move_duration = raw["garage_move_duration"]
+	config.garage_vehicle_scale = raw["garage_vehicle_scale"]
 	config._load_destinations()
 	return config
 

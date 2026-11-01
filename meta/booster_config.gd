@@ -7,9 +7,11 @@ const KIND_KEYS: Dictionary[BoosterAccess.Kind, String] = {
 	BoosterAccess.Kind.COXEUR: "coxeur",
 	BoosterAccess.Kind.APPRENTI: "apprenti",
 	BoosterAccess.Kind.DIOULE: "dioule",
+	BoosterAccess.Kind.GARAGE: "garage",
 }
 
 var dioule_max_nodes: int = 0
+var garage_max_uses: int = 0
 var victory_coins: int = 0
 var victory_ad_multiplier: int = 1
 
@@ -25,6 +27,7 @@ static func load_default() -> BoosterConfig:
 	var raw: Dictionary = parsed
 	config._entries = raw["boosters"]
 	config.dioule_max_nodes = _read_int(raw, "dioule_max_nodes")
+	config.garage_max_uses = _read_int(raw, "garage_max_uses")
 	config.victory_coins = _read_int(raw, "victory_coins")
 	config.victory_ad_multiplier = _read_int(raw, "victory_ad_multiplier")
 	return config

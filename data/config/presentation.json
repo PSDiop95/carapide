@@ -22,5 +22,7 @@
   "coxeur_arc_height": 3.0,
   "dioule_wave_duration": 0.6,
   "dioule_hop_duration": 0.3,
-  "dioule_hop_height": 1.0
+  "dioule_hop_height": 1.0,
+  "garage_move_duration": 0.4,
+  "garage_vehicle_scale": 0.3
 }

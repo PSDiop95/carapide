@@ -19,6 +19,7 @@ var _telemetry: LevelTelemetry
 var _inventory: BoosterInventory = null
 var _flow: BoosterFlow = null
 var _victory_coins: int = 0
+var _restart_after_loss: bool = false
 
 
 func _ready() -> void:
@@ -79,7 +80,11 @@ func _on_level_ended(won: bool) -> void:
 		_was_lost = true
 		_telemetry.level_failed(view.occupied_slots(), view.head_dest(), Time.get_ticks_msec())
 		Events.level_lost.emit(current_level.id)
-		hud.show_result("LOST_TITLE", "RETRY_BUTTON")
+		if _restart_after_loss:
+			_restart_after_loss = false
+			_on_primary_pressed()
+		else:
+			hud.show_result("LOST_TITLE", "RETRY_BUTTON")
 
 
 func _show_victory() -> void:
@@ -203,6 +208,7 @@ func _apply_boosters_flag() -> void:
 		_flow.setup(_inventory, hud)
 		_flow.booster_used.connect(_on_booster_used)
 		_flow.level_blocked.connect(_on_level_blocked)
+		_flow.restart_requested.connect(_on_restart_requested)
 	_on_balance_changed(Services.wallet.balance())
 
 
@@ -212,6 +218,11 @@ func _on_balance_changed(balance: int) -> void:
 
 func _on_booster_used(kind: BoosterAccess.Kind) -> void:
 	_telemetry.booster_used(BoosterConfig.KIND_KEYS[kind])
+
+
+## « Recommencer » depuis la pop-up : pas d'écran de défaite en plus.
+func _on_restart_requested() -> void:
+	_restart_after_loss = true
 
 
 func _on_level_blocked() -> void:

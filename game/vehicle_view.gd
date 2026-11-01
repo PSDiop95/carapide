@@ -78,6 +78,27 @@ func fly_to(target: Vector3, duration: float, arc_height: float, shadow_material
 	_finish_parking()
 
 
+## Rangée Garage : le véhicule rétrécit, à plat, sans quitter la scène.
+func move_to_garage(target: Vector3, ratio: float, duration: float) -> void:
+	is_parked = false
+	var tween: Tween = create_tween().set_parallel()
+	tween.tween_property(self, "position", target, duration)
+	tween.tween_property(self, "scale", Vector3.ONE * ratio, duration)
+	tween.tween_method(_set_heading, rotation.y, 0.0, duration)
+	await tween.finished
+
+
+## Retour à une place de la gare, passagers conservés.
+func return_from_garage(target: Vector3, duration: float) -> void:
+	var tween: Tween = create_tween().set_parallel()
+	tween.tween_property(self, "position", target, duration)
+	tween.tween_property(self, "scale", Vector3.ONE, duration)
+	tween.tween_method(_set_heading, rotation.y, PARKED_ANGLE, duration)
+	await tween.finished
+	is_parked = true
+	parked.emit()
+
+
 func set_loaded(loaded: int) -> void:
 	_show_remaining(_capacity - loaded)
 

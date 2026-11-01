@@ -8,6 +8,7 @@ signal critical_entered
 enum Danger { NORMAL, WARNING, CRITICAL }
 
 const PAD_SIZE: Vector2 = Vector2(1.5, 5.3)
+const PAD_GAP: float = 0.25
 const PAD_CENTER_OFFSET_Z: float = -0.45
 const PAD_Y: float = 0.01
 const PICTO_OFFSET_Z: float = -2.55
@@ -31,22 +32,42 @@ var _palette: ViewPalette
 var _slots: int = 0
 var _occupied: int = 0
 var _pictos: Array[MeshInstance3D] = []
+var _layout: LevelLayout
+var _built: Array[Node3D] = []
 var _pulse: Tween = null
 
 
 func setup(layout: LevelLayout, config: PresentationConfig, palette: ViewPalette) -> void:
 	_config = config
 	_palette = palette
-	_slots = layout.slots
-	_add_backdrop(layout)
+	_layout = layout
 	_pad_material.albedo_color = PAD_COLOR
+	_coxeur_material.albedo_color = COXEUR_PAD_COLOR
+	_backdrop_material.albedo_color = NORMAL_COLOR
+	_build_pads()
+
+
+## Le Garage a vidé la gare et ajouté une place : les places sont redessinées, resserrées.
+func rebuild_after_garage(slot_count: int) -> void:
+	_layout.set_slots(slot_count)
+	_occupied = 0
+	_build_pads()
+	_update_danger()
+
+
+func _build_pads() -> void:
+	for node: Node3D in _built:
+		node.queue_free()
+	_built.clear()
+	_pictos.clear()
+	_slots = _layout.slots
+	_add_backdrop(_layout)
 	var pad: PlaneMesh = PlaneMesh.new()
-	pad.size = PAD_SIZE
-	for slot: int in layout.slots:
-		_add_pad(pad, _pad_material, layout.slot_world(slot))
-	if layout.coxeur_visible:
-		_coxeur_material.albedo_color = COXEUR_PAD_COLOR
-		_add_pad(pad, _coxeur_material, layout.slot_world(layout.coxeur_slot()))
+	pad.size = Vector2(minf(PAD_SIZE.x, _layout.slot_spacing() - PAD_GAP), PAD_SIZE.y)
+	for slot: int in _layout.slots:
+		_add_pad(pad, _pad_material, _layout.slot_world(slot))
+	if _layout.coxeur_visible:
+		_add_pad(pad, _coxeur_material, _layout.slot_world(_layout.coxeur_slot()))
 
 
 ## Le niveau de danger selon les places libres.
@@ -80,19 +101,20 @@ func _add_pad(pad: PlaneMesh, material: StandardMaterial3D, slot_position: Vecto
 	instance.material_override = material
 	instance.position = slot_position + Vector3(0.0, PAD_Y, PAD_CENTER_OFFSET_Z)
 	add_child(instance)
+	_built.append(instance)
 	_pictos.append(_add_picto(slot_position))
 
 
 func _add_backdrop(layout: LevelLayout) -> void:
-	_backdrop_material.albedo_color = NORMAL_COLOR
 	var plane: PlaneMesh = PlaneMesh.new()
-	plane.size = Vector2(float(layout.slots) * LevelLayout.SLOT_SPACING, PAD_SIZE.y) + Vector2.ONE * BACKDROP_MARGIN
+	plane.size = Vector2(float(layout.slots) * layout.slot_spacing(), PAD_SIZE.y) + Vector2.ONE * BACKDROP_MARGIN
 	var backdrop: MeshInstance3D = MeshInstance3D.new()
 	backdrop.mesh = plane
 	backdrop.material_override = _backdrop_material
 	var center_x: float = (layout.slot_world(0).x + layout.slot_world(layout.slots - 1).x) * 0.5
 	backdrop.position = Vector3(center_x, BACKDROP_Y, LevelLayout.STATION_Z + PAD_CENTER_OFFSET_Z)
 	add_child(backdrop)
+	_built.append(backdrop)
 
 
 func _add_picto(slot_position: Vector3) -> MeshInstance3D:
@@ -102,6 +124,7 @@ func _add_picto(slot_position: Vector3) -> MeshInstance3D:
 	picto.scale = Vector3.ONE * PICTO_RADIUS
 	picto.visible = false
 	add_child(picto)
+	_built.append(picto)
 	return picto
 
 

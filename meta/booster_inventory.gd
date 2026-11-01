@@ -55,6 +55,10 @@ func can_obtain(kind: BoosterAccess.Kind) -> bool:
 	return current != Offer.LOCKED and current != Offer.NONE
 
 
+func garage_max_uses() -> int:
+	return config.garage_max_uses
+
+
 ## Faux si le paiement échoue (pub non vue, plus rien à payer) ; rien n'est alors débité.
 func pay(kind: BoosterAccess.Kind) -> bool:
 	match offer(kind):
