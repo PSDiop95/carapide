@@ -7,6 +7,9 @@ extends Node
 const MARKER_PATH: String = "/storage/emulated/0/Android/data/com.carapide.prototype/files/perf_probe.txt"
 const LOG_PREFIX: String = "CARAPIDE_PERF"
 const REFERENCE_LEVEL: int = 10
+## Niveau le plus chargé en draw calls, mesuré à part.
+const PEAK_EFFECT: String = "level14"
+const PEAK_LEVEL: int = 14
 const WARMUP_SECONDS: float = 2.0
 const DURATION_SECONDS: float = 60.0
 const STEP_SECONDS: float = 0.8
@@ -52,7 +55,7 @@ static func log_interactive() -> void:
 func _ready() -> void:
 	RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), true)
 	_main.prepare_for_measure()
-	_main.jump_to_level(REFERENCE_LEVEL)
+	_main.jump_to_level(PEAK_LEVEL if _effect == PEAK_EFFECT else REFERENCE_LEVEL)
 
 
 func _process(delta: float) -> void:

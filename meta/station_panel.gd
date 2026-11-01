@@ -24,7 +24,7 @@ var _column: VBoxContainer = VBoxContainer.new()
 
 func _ready() -> void:
 	color = SHADE
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_column.alignment = BoxContainer.ALIGNMENT_CENTER
 	_column.add_theme_constant_override("separation", SEPARATION)
 	_column.set_anchors_preset(Control.PRESET_FULL_RECT)

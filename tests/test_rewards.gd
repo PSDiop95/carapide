@@ -239,6 +239,14 @@ func test_hub_dot_follows_the_station() -> void:
 	assert_true(flow._hub.station_dot.visible, "Recharge finie")
 
 
+func test_panels_cover_the_whole_screen() -> void:
+	var flow: RewardsFlow = _flow([T0] as Array[int])
+	var screen: Vector2 = flow._hub.settings_panel.get_viewport_rect().size
+	assert_eq(flow.station_panel.size, screen)
+	assert_eq(flow.wheel_panel.size, screen)
+	assert_eq(flow._hub.settings_panel.size, screen)
+
+
 func test_station_screen_claims_free_tier_then_ad_tier() -> void:
 	var now: Array[int] = [T0]
 	var flow: RewardsFlow = _flow(now)

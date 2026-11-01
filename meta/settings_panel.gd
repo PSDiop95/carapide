@@ -23,7 +23,7 @@ func setup(save: SaveService) -> void:
 
 func _ready() -> void:
 	color = SHADE
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var column: VBoxContainer = VBoxContainer.new()
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_theme_constant_override("separation", SEPARATION)
