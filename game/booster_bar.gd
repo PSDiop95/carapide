@@ -1,6 +1,6 @@
 class_name BoosterBar
 extends VBoxContainer
-## Barre basse : Coxeur, Apprenti et un emplacement verrouillé pour donner envie.
+## Barre basse : Coxeur, Apprenti, Dioulé. Le Dioulé verrouillé reste anonyme pour donner envie.
 
 signal booster_pressed(kind: BoosterAccess.Kind)
 
@@ -11,11 +11,11 @@ const HINT_SECONDS: float = 2.0
 const NAME_KEYS: Dictionary[BoosterAccess.Kind, String] = {
 	BoosterAccess.Kind.COXEUR: "BOOSTER_COXEUR",
 	BoosterAccess.Kind.APPRENTI: "BOOSTER_APPRENTI",
+	BoosterAccess.Kind.DIOULE: "BOOSTER_DIOULE",
 }
 
 var _inventory: BoosterInventory
 var _buttons: Dictionary[BoosterAccess.Kind, BoosterButton] = {}
-var _teaser: BoosterButton = BoosterButton.new()
 var _hint: Label = Label.new()
 var _hint_timer: Timer = Timer.new()
 
@@ -43,7 +43,6 @@ func _ready() -> void:
 		button.pressed.connect(booster_pressed.emit.bind(kind))
 		_buttons[kind] = button
 		row.add_child(button)
-	row.add_child(_teaser)
 	_hint_timer.one_shot = true
 	_hint_timer.wait_time = HINT_SECONDS
 	_hint_timer.timeout.connect(clear_hint)
@@ -55,8 +54,9 @@ func refresh() -> void:
 	for kind: BoosterAccess.Kind in _buttons:
 		var offer: BoosterInventory.Offer = _inventory.offer(kind)
 		var usable: bool = offer != BoosterInventory.Offer.LOCKED and offer != BoosterInventory.Offer.NONE
-		_buttons[kind].show_state(tr(NAME_KEYS[kind]), offer_text(_inventory, kind), usable, offer == BoosterInventory.Offer.AD)
-	_teaser.show_state(tr("BOOSTER_TEASER"), tr("BOOSTER_LOCKED") % _inventory.config.teaser_unlock_level, false, false)
+		var hidden_name: bool = kind == BoosterAccess.Kind.DIOULE and offer == BoosterInventory.Offer.LOCKED
+		var title: String = tr("BOOSTER_TEASER") if hidden_name else tr(NAME_KEYS[kind])
+		_buttons[kind].show_state(title, offer_text(_inventory, kind), usable, offer == BoosterInventory.Offer.AD)
 
 
 func set_active(kind: BoosterAccess.Kind, active: bool) -> void:

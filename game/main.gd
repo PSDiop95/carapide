@@ -153,7 +153,7 @@ func measure_step(effect: String) -> void:
 		_start_level(_level_number)
 	elif _flow != null and _flow.popup.visible:
 		_flow.measure_resolve_popup(effect)
-	elif not view.measure_effect(effect):
+	elif _flow == null or not _flow.measure_effect(effect):
 		view.measure_tap()
 
 

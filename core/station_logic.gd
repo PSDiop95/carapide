@@ -6,6 +6,8 @@ const NO_SLOT: int = -1
 
 ## Dernier index : juste à droite des places normales.
 var coxeur_slot: int
+## Places retirées du jeu, pour mesurer la marge d'une position.
+var reserved_slots: int = 0
 
 var _slot_count: int
 ## Véhicules garés, du plus ancien au plus récent.
@@ -19,6 +21,7 @@ func _init(slot_count: int) -> void:
 
 func copy() -> StationLogic:
 	var clone: StationLogic = StationLogic.new(_slot_count)
+	clone.reserved_slots = reserved_slots
 	for parked: ParkedVehicle in _parked:
 		clone._parked.append(parked.copy())
 	return clone
@@ -37,7 +40,18 @@ func parked_count() -> int:
 	return _parked.size()
 
 
+## Places normales encore libres.
+func free_slot_count() -> int:
+	var used: int = 0
+	for parked: ParkedVehicle in _parked:
+		if parked.slot < _slot_count:
+			used += 1
+	return _slot_count - reserved_slots - used
+
+
 func first_free_slot() -> int:
+	if free_slot_count() <= 0:
+		return NO_SLOT
 	for slot: int in _slot_count:
 		if not _is_slot_used(slot):
 			return slot
@@ -66,6 +80,14 @@ func needs_by_slot() -> Array[QueueBlock]:
 			if parked.slot == slot:
 				needs.append(QueueBlock.new(parked.dest, parked.free_seats()))
 	return needs
+
+
+## Sièges libres de chaque destination dans les véhicules garés.
+func free_seats_by_dest() -> Dictionary[String, int]:
+	var totals: Dictionary[String, int] = {}
+	for parked: ParkedVehicle in _parked:
+		totals[parked.dest] = totals.get(parked.dest, 0) + parked.free_seats()
+	return totals
 
 
 ## L'ordre d'arrivée compte à l'intérieur d'une destination, pas entre destinations.

@@ -10,6 +10,7 @@ const SETTLE_FRAMES: int = 4
 const MAX_WAIT_FRAMES: int = 6000
 const CAPTURED_LEVEL: int = 1
 const FLIGHT_FRAMES: int = 10
+const DIOULE_WAVE_FRAMES: int = 15
 const WARNING_OCCUPIED: int = 3
 const DANGER_LEVEL: int = 10
 const FLIGHT_SECONDS: float = 0.7
@@ -148,6 +149,27 @@ func _run_tutorials(number: int) -> void:
 			_capture("after_apprenti")
 			_expect(_main.view.occupied_slots() == 0, "Apprenti : gare non vidée")
 		await _reload_level()
+	if _main.get_inventory().needs_tutorial(BoosterAccess.Kind.DIOULE):
+		await _check_dioule_tutorial(number)
+
+
+## Tutoriel forcé, vague de saut, stock débité d'un seul Dioulé, partie relancée.
+func _check_dioule_tutorial(number: int) -> void:
+	await _frames(SETTLE_FRAMES)
+	_expect(_flow().tutorial.visible, "Niveau %d : tutoriel Dioulé absent" % number)
+	var stock: int = _main.get_inventory().stock(BoosterAccess.Kind.DIOULE)
+	Engine.time_scale = 1.0
+	await _frames(2)
+	_capture("tutorial_dioule")
+	await _click(_flow().tutorial.target_rect.get_center())
+	await _frames(DIOULE_WAVE_FRAMES)
+	_capture("dioule_wave")
+	Engine.time_scale = TIME_SCALE
+	await _settle_replay()
+	_capture("after_dioule")
+	_expect(_main.get_inventory().stock(BoosterAccess.Kind.DIOULE) == stock - 1, "Dioulé : stock non débité")
+	_expect(not _main.get_inventory().needs_tutorial(BoosterAccess.Kind.DIOULE), "Tutoriel Dioulé non marqué")
+	await _reload_level()
 
 
 ## Véhicule libre qui ne chargera pas tout de suite : l'Apprenti aura quelque chose à ranger.

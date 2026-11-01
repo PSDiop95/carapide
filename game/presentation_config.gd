@@ -26,6 +26,9 @@ var queue_chip_count: int = 0
 var queue_sign_count: int = 0
 var coxeur_flight_duration: float = 0.0
 var coxeur_arc_height: float = 0.0
+var dioule_wave_duration: float = 0.0
+var dioule_hop_duration: float = 0.0
+var dioule_hop_height: float = 0.0
 var dest_colors: Dictionary[String, Color] = {}
 var dest_pictos: Dictionary[String, String] = {}
 var dest_name_keys: Dictionary[String, String] = {}
@@ -55,6 +58,9 @@ static func load_default() -> PresentationConfig:
 	config.queue_sign_count = _read_int(raw, "queue_sign_count")
 	config.coxeur_flight_duration = raw["coxeur_flight_duration"]
 	config.coxeur_arc_height = raw["coxeur_arc_height"]
+	config.dioule_wave_duration = raw["dioule_wave_duration"]
+	config.dioule_hop_duration = raw["dioule_hop_duration"]
+	config.dioule_hop_height = raw["dioule_hop_height"]
 	config._load_destinations()
 	return config
 

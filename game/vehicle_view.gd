@@ -30,6 +30,7 @@ var _capacity: int = 0
 var _length: float = 0.0
 var _width: float = 0.0
 var _highlight_material: Material
+var _dest_material: Material
 var _path: Curve3D = null
 var _shadow: MeshInstance3D = null
 
@@ -41,7 +42,8 @@ func setup(vehicle: LevelVehicle, world_position: Vector3, palette: ViewPalette)
 	_highlight_material = palette.highlight_material
 	position = world_position
 	_body.mesh = palette.body_mesh(vehicle.length, vehicle.width)
-	_body.material_override = palette.dest_material(vehicle.dest)
+	_dest_material = palette.dest_material(vehicle.dest)
+	_body.material_override = _dest_material
 	_body.position.y = HEIGHT * 0.5
 	add_child(_body)
 	_arrow.mesh = palette.arrow_mesh
@@ -96,13 +98,22 @@ func bump(distance: float, duration: float) -> void:
 
 
 func highlight(duration: float) -> void:
-	var normal: Material = _body.material_override
-	if normal == _highlight_material:
+	if _body.material_override == _highlight_material:
 		return
 	_body.material_override = _highlight_material
 	var tween: Tween = create_tween()
 	tween.tween_interval(duration)
-	tween.tween_callback(_restore_material.bind(normal))
+	tween.tween_callback(_restore_material)
+
+
+## Saut du Dioulé : la couleur change au sommet, le pictogramme avec.
+func hop_to_dest(dest: String, palette: ViewPalette, delay: float, duration: float, height: float) -> void:
+	var ground: float = position.y
+	var tween: Tween = create_tween()
+	tween.tween_interval(delay)
+	tween.tween_property(self, "position:y", ground + height, duration * 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_callback(_show_dest.bind(dest, palette))
+	tween.tween_property(self, "position:y", ground, duration * 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 
 func _fly_step(progress: float, start: Vector3, target: Vector3, arc_height: float, start_heading: float) -> void:
@@ -146,8 +157,15 @@ func _set_heading(angle: float) -> void:
 	_picto.rotation.y = -angle
 
 
-func _restore_material(material: Material) -> void:
-	_body.material_override = material
+func _restore_material() -> void:
+	_body.material_override = _dest_material
+
+
+func _show_dest(dest: String, palette: ViewPalette) -> void:
+	_dest_material = palette.dest_material(dest)
+	if _body.material_override != _highlight_material:
+		_body.material_override = _dest_material
+	_picto.mesh = palette.picto_mesh(dest)
 
 
 ## Passagers manquants avant le départ, sous le véhicule garé.

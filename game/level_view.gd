@@ -123,12 +123,25 @@ func level_vehicle(vehicle_id: int) -> LevelVehicle:
 	return _level.vehicles[vehicle_id]
 
 
+func can_use_dioule() -> bool:
+	return _rules.can_use_dioule()
+
+
 func play_coxeur(vehicle_id: int) -> void:
 	_apply(_rules.use_coxeur(vehicle_id))
 
 
 func play_apprenti() -> void:
 	_apply(_rules.use_apprenti())
+
+
+## Mélange choisi par le solveur ; vide si aucun n'est soluble (booster alors non consommé).
+func compute_dioule(max_nodes: int) -> PackedStringArray:
+	return DiouleMixer.mix(_rules, max_nodes)
+
+
+func play_dioule(dests: PackedStringArray) -> void:
+	_apply(_rules.use_dioule(dests))
 
 
 func play_abandon() -> void:
@@ -140,11 +153,6 @@ func measure_tap() -> void:
 	var free: PackedInt32Array = _rules.free_vehicles()
 	if not free.is_empty():
 		_apply(_rules.tap(free[0]))
-
-
-## Mesure : déclenche l'effet demandé. Faux si rien n'a été joué.
-func measure_effect(_effect: String) -> bool:
-	return false
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -262,6 +270,8 @@ func _play_event(event: GameEvent) -> void:
 			_start_move(event)
 		GameEvent.Type.QUEUE_REORDERED:
 			_queue_view.replace_remaining(event.blocks)
+		GameEvent.Type.DESTINATIONS_CHANGED:
+			await _play_dioule(event)
 		GameEvent.Type.RESCUE_NEEDED:
 			await _wait_for_moves()
 			if is_blocked():
@@ -284,7 +294,7 @@ func _play_event(event: GameEvent) -> void:
 ## Lance le trajet sans attendre : les taps suivants ne font pas la queue derrière.
 func _start_move(event: GameEvent) -> void:
 	var vehicle: LevelVehicle = _level.vehicles[event.vehicle_id]
-	_station_view.vehicle_arrived(event.slot, vehicle.dest)
+	_station_view.vehicle_arrived(event.slot, event.dest)
 	if event.type == GameEvent.Type.FLEW:
 		_moving += 1
 		await _vehicles[event.vehicle_id].fly_to(layout.slot_world(event.slot), _config.coxeur_flight_duration, _config.coxeur_arc_height, _palette.shadow_material)
@@ -304,6 +314,19 @@ func _wait_for_moves() -> void:
 
 func _on_critical_entered() -> void:
 	Services.haptics.vibrate(_config.danger_vibration_ms)
+
+
+## Vague de gauche à droite ; aucun tap pendant le saut.
+func _play_dioule(event: GameEvent) -> void:
+	input_enabled = false
+	var ids: Array[int] = event.dests_by_vehicle.keys()
+	ids.sort_custom(func(a: int, b: int) -> bool: return _level.vehicles[a].pos_x < _level.vehicles[b].pos_x)
+	var hop: float = _config.dioule_hop_duration
+	var step: float = (_config.dioule_wave_duration - hop) / float(maxi(ids.size() - 1, 1))
+	for index: int in ids.size():
+		_vehicles[ids[index]].hop_to_dest(event.dests_by_vehicle[ids[index]], _palette, float(index) * step, hop, _config.dioule_hop_height)
+	await get_tree().create_timer(_config.dioule_wave_duration).timeout
+	input_enabled = true
 
 
 func _play_boarding(event: GameEvent) -> void:

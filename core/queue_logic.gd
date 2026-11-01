@@ -44,6 +44,13 @@ func total_remaining() -> int:
 	return total
 
 
+func total_by_dest() -> Dictionary[String, int]:
+	var totals: Dictionary[String, int] = {}
+	for block: QueueBlock in _blocks:
+		totals[block.dest] = totals.get(block.dest, 0) + block.count
+	return totals
+
+
 ## Copie des blocs restants, tête d'abord.
 func blocks() -> Array[QueueBlock]:
 	return _merged_copy(_blocks)

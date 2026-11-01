@@ -19,5 +19,8 @@
   "queue_chip_count": 3,
   "queue_sign_count": 6,
   "coxeur_flight_duration": 0.7,
-  "coxeur_arc_height": 3.0
+  "coxeur_arc_height": 3.0,
+  "dioule_wave_duration": 0.6,
+  "dioule_hop_duration": 0.3,
+  "dioule_hop_height": 1.0
 }

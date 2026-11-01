@@ -6,3 +6,4 @@ Release, installation neuve, 1er lancement (cache froid) pour FPS, RAM et draw c
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2026-11-01 | bd8a965+ | Ligne de base avant F1, 3D à 100 % (rouge) | 143.6 | 1930 | 47.4 | 40.0 | 361 | 111 | A23 3,6 Go (pas la réf. 2 Go) |
 | 2026-11-01 | bd8a965+ | Ligne de base avant F1, 3D à 75 % | 143.6 | 1930 | 73.3 | 59.6 | 342 | 111 | A23 3,6 Go (pas la réf. 2 Go) |
+| 2026-11-01 | 2eff557+ | F1 Dioulé | 143.6 | 1873 | 72.0 | 56.5 | 347 | 114 | A23 3,6 Go (pas la réf. 2 Go) |

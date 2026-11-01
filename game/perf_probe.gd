@@ -14,6 +14,8 @@ const LOW_PERCENTILE: float = 0.05
 const MEDIAN_PERCENTILE: float = 0.5
 const NONE: String = "none"
 
+static var _effect_ms_peak: float = 0.0
+
 var _main: GameMain
 var _effect: String = NONE
 var _frames: PackedFloat32Array = PackedFloat32Array()
@@ -31,6 +33,10 @@ static func requested_effect() -> String:
 	if not OS.has_feature("android") or not FileAccess.file_exists(MARKER_PATH):
 		return ""
 	return FileAccess.get_file_as_string(MARKER_PATH).strip_edges()
+
+
+static func record_effect_ms(duration_ms: float) -> void:
+	_effect_ms_peak = maxf(_effect_ms_peak, duration_ms)
 
 
 func setup(main: GameMain, effect: String) -> void:
@@ -73,7 +79,7 @@ func _report() -> void:
 	var p50: float = 1.0 / _frames[int(float(_frames.size() - 1) * MEDIAN_PERCENTILE)]
 	var p5: float = 1.0 / _frames[int(float(_frames.size() - 1) * (1.0 - LOW_PERCENTILE))]
 	var count: float = float(_frames.size())
-	print("%s effect=%s frames=%d fps_p50=%.1f fps_p5=%.1f draw_peak=%d gpu_ms=%.1f render_cpu_ms=%.1f video_mb=%.0f static_mb=%.0f done=1" % [
+	print("%s effect=%s frames=%d fps_p50=%.1f fps_p5=%.1f draw_peak=%d gpu_ms=%.1f render_cpu_ms=%.1f video_mb=%.0f static_mb=%.0f effect_ms=%.0f done=1" % [
 		LOG_PREFIX, _effect, _frames.size(), p50, p5, int(_draw_peak), _gpu_ms_total / count, _cpu_ms_total / count,
-		_video_peak / 1048576.0, Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0,
+		_video_peak / 1048576.0, Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0, _effect_ms_peak,
 	])

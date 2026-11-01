@@ -12,6 +12,10 @@ var _board: BoardLogic
 var _station: StationLogic
 var _queue: QueueLogic
 var _access: BoosterAccess
+## Destination courante de chaque véhicule : le Dioulé la remplace, jamais en place (les copies la partagent).
+var _dests: PackedStringArray = PackedStringArray()
+## Vide tant qu'aucun Dioulé n'a été joué : la clé d'état reste courte pour le solveur.
+var _dest_key: String = ""
 
 
 ## Sans `access` : aucun booster, une gare bloquée perd aussitôt.
@@ -21,6 +25,8 @@ func _init(level: LevelData, access: BoosterAccess = null, slots: int = level.sl
 	_board = BoardLogic.new(level)
 	_station = StationLogic.new(slots)
 	_queue = QueueLogic.new(level.queue)
+	for vehicle: LevelVehicle in level.vehicles:
+		_dests.append(vehicle.dest)
 
 
 ## Copie indépendante, pour explorer sans toucher à la partie.
@@ -30,11 +36,27 @@ func copy(access: BoosterAccess = _access) -> GameRules:
 	clone._board = _board.copy()
 	clone._station = _station.copy()
 	clone._queue = _queue.copy()
+	clone._dests = _dests
+	clone._dest_key = _dest_key
+	return clone
+
+
+## Copie où les véhicules ont ces destinations, pour évaluer un Dioulé.
+func with_destinations(dests: PackedStringArray) -> GameRules:
+	var clone: GameRules = copy()
+	clone._set_destinations(dests)
+	return clone
+
+
+## Copie privée de `count` places libres, pour mesurer la marge. Il doit en rester au moins une.
+func with_reserved_slots(count: int) -> GameRules:
+	var clone: GameRules = copy()
+	clone._station.reserved_slots = count
 	return clone
 
 
 func state_key() -> String:
-	return "%s|%s|%s" % [_board.state_key(), _station.state_key(), _queue.state_key()]
+	return "%s|%s|%s|%s" % [_board.state_key(), _station.state_key(), _queue.state_key(), _dest_key]
 
 
 func tap(vehicle_id: int) -> Array[GameEvent]:
@@ -47,8 +69,8 @@ func tap(vehicle_id: int) -> Array[GameEvent]:
 		return events
 	var vehicle: LevelVehicle = _level.vehicles[vehicle_id]
 	_board.remove(vehicle_id)
-	var parked: ParkedVehicle = _station.park(vehicle_id, vehicle.dest, vehicle.capacity)
-	events.append(GameEvent.moved(vehicle_id, parked.slot))
+	var parked: ParkedVehicle = _station.park(vehicle_id, _dests[vehicle_id], vehicle.capacity)
+	events.append(GameEvent.moved(vehicle_id, parked.slot, parked.dest))
 	_resolve_boarding(events)
 	_update_status(events)
 	return events
@@ -61,8 +83,8 @@ func use_coxeur(vehicle_id: int) -> Array[GameEvent]:
 		return events
 	var vehicle: LevelVehicle = _level.vehicles[vehicle_id]
 	_board.remove(vehicle_id)
-	var parked: ParkedVehicle = _station.park_coxeur(vehicle_id, vehicle.dest, vehicle.capacity)
-	events.append(GameEvent.flew(vehicle_id, parked.slot))
+	var parked: ParkedVehicle = _station.park_coxeur(vehicle_id, _dests[vehicle_id], vehicle.capacity)
+	events.append(GameEvent.flew(vehicle_id, parked.slot, parked.dest))
 	_resume(events)
 	return events
 
@@ -75,6 +97,19 @@ func use_apprenti() -> Array[GameEvent]:
 	_queue.prioritize(_station.needs_by_slot())
 	events.append(GameEvent.queue_reordered(_queue.blocks()))
 	_resume(events)
+	return events
+
+
+## Applique un mélange choisi par DiouleMixer. Véhicules garés et file ne bougent pas.
+func use_dioule(dests: PackedStringArray) -> Array[GameEvent]:
+	var events: Array[GameEvent] = []
+	if not can_use_dioule():
+		return events
+	_set_destinations(dests)
+	var by_vehicle: Dictionary[int, String] = {}
+	for id: int in _board.remaining_vehicles():
+		by_vehicle[id] = _dests[id]
+	events.append(GameEvent.destinations_changed(by_vehicle))
 	return events
 
 
@@ -95,6 +130,37 @@ func can_use_apprenti() -> bool:
 	return _accepts_booster() and _queue.would_reorder(_station.needs_by_slot())
 
 
+## Gare bloquée : le bouchon ne peut plus rien pour elle, mélanger ne sauverait pas la partie.
+func can_use_dioule() -> bool:
+	return status == Status.PLAYING and _board.remaining_count() >= 2
+
+
+## Lecture seule : destinations courantes, indexées par véhicule.
+func destinations() -> PackedStringArray:
+	return _dests
+
+
+func vehicle_capacity(vehicle_id: int) -> int:
+	return _level.vehicles[vehicle_id].capacity
+
+
+## Lecture seule : places libres de la gare, sans les places réservées.
+func free_slot_count() -> int:
+	return _station.free_slot_count()
+
+
+## Lecture seule : sièges libres restants par destination, bouchon et gare. Égal à la file à tout instant.
+func seats_left_by_dest() -> Dictionary[String, int]:
+	var totals: Dictionary[String, int] = _station.free_seats_by_dest()
+	for id: int in _board.remaining_vehicles():
+		totals[_dests[id]] = totals.get(_dests[id], 0) + vehicle_capacity(id)
+	return totals
+
+
+func passengers_left_by_dest() -> Dictionary[String, int]:
+	return _queue.total_by_dest()
+
+
 ## Lecture seule : véhicules encore dans le bouchon.
 func board_vehicles() -> PackedInt32Array:
 	return _board.remaining_vehicles()
@@ -104,7 +170,7 @@ func board_vehicles() -> PackedInt32Array:
 func head_vehicles() -> PackedInt32Array:
 	var ids: PackedInt32Array = PackedInt32Array()
 	for id: int in _board.remaining_vehicles():
-		if _level.vehicles[id].dest == _queue.head_dest():
+		if _dests[id] == _queue.head_dest():
 			ids.append(id)
 	return ids
 
@@ -142,6 +208,11 @@ func free_vehicles() -> PackedInt32Array:
 
 func passengers_remaining() -> int:
 	return _queue.total_remaining()
+
+
+func _set_destinations(dests: PackedStringArray) -> void:
+	_dests = dests
+	_dest_key = "".join(dests)
 
 
 func _resolve_boarding(events: Array[GameEvent]) -> void:

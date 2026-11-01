@@ -58,6 +58,15 @@ static func can_still_win(rules: GameRules, budget: int, max_nodes: int = DEFAUL
 	return solver._can_win(rules.copy(solver._everything), budget)
 
 
+## Pour DiouleMixer : gagnable sans booster ? Consomme le budget de nœuds de ce solveur.
+func can_win_without_booster(rules: GameRules) -> bool:
+	return _can_win(rules.copy(_everything), 0)
+
+
+func nodes_used() -> int:
+	return _nodes
+
+
 static func _options(rules: GameRules, access: BoosterAccess) -> Array[BoosterAdvice]:
 	var options: Array[BoosterAdvice] = []
 	var coxeur: bool = access.can_obtain(BoosterAccess.Kind.COXEUR)

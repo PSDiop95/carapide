@@ -6,9 +6,10 @@ const PATH: String = "res://data/config/boosters.json"
 const KIND_KEYS: Dictionary[BoosterAccess.Kind, String] = {
 	BoosterAccess.Kind.COXEUR: "coxeur",
 	BoosterAccess.Kind.APPRENTI: "apprenti",
+	BoosterAccess.Kind.DIOULE: "dioule",
 }
 
-var teaser_unlock_level: int = 0
+var dioule_max_nodes: int = 0
 var victory_coins: int = 0
 var victory_ad_multiplier: int = 1
 
@@ -23,7 +24,7 @@ static func load_default() -> BoosterConfig:
 		return config
 	var raw: Dictionary = parsed
 	config._entries = raw["boosters"]
-	config.teaser_unlock_level = _read_int(raw, "teaser_unlock_level")
+	config.dioule_max_nodes = _read_int(raw, "dioule_max_nodes")
 	config.victory_coins = _read_int(raw, "victory_coins")
 	config.victory_ad_multiplier = _read_int(raw, "victory_ad_multiplier")
 	return config

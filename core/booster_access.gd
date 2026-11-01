@@ -3,7 +3,7 @@ extends RefCounted
 ## Ce que le joueur peut obtenir : le core sait ainsi distinguer BLOCKED de LOST,
 ## sans connaître ni pièces ni publicité. Par défaut : aucun booster.
 
-enum Kind { COXEUR, APPRENTI }
+enum Kind { COXEUR, APPRENTI, DIOULE }
 
 var _unlimited: bool = false
 

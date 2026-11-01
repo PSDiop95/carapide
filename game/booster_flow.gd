@@ -7,6 +7,7 @@ signal booster_used(kind: BoosterAccess.Kind)
 signal level_blocked
 
 const VEHICLE_TARGET_SIZE: Vector2 = Vector2(150.0, 150.0)
+const MEASURE_EFFECT_PERIOD: int = 6
 
 var bar: BoosterBar = BoosterBar.new()
 var popup: BlockedPopup = BlockedPopup.new()
@@ -20,6 +21,8 @@ var _targeting: bool = false
 var _advice: BoosterAdvice = null
 var _tutorial_kind: BoosterAccess.Kind = BoosterAccess.Kind.COXEUR
 var _tutorial_vehicle: int = BoardLogic.NO_VEHICLE
+var _pending_mix: PackedStringArray = PackedStringArray()
+var _measure_steps: int = 0
 
 
 func setup(inventory: BoosterInventory, hud: Hud) -> void:
@@ -60,14 +63,27 @@ func attach(view: LevelView) -> void:
 func _on_bar_pressed(kind: BoosterAccess.Kind) -> void:
 	if _busy or _view == null:
 		return
-	if kind == BoosterAccess.Kind.APPRENTI:
-		_set_targeting(false)
-		if _view.can_use_apprenti():
-			_use(kind, BoardLogic.NO_VEHICLE)
-		else:
-			bar.show_hint(tr("APPRENTI_USELESS_HINT"))
+	match kind:
+		BoosterAccess.Kind.APPRENTI:
+			_set_targeting(false)
+			if _view.can_use_apprenti():
+				_use(kind, BoardLogic.NO_VEHICLE)
+			else:
+				bar.show_hint(tr("APPRENTI_USELESS_HINT"))
+		BoosterAccess.Kind.DIOULE:
+			_set_targeting(false)
+			_try_dioule()
+		_:
+			_set_targeting(not _targeting)
+
+
+## Le mélange est cherché avant le paiement : sans mélange soluble, rien n'est consommé.
+func _try_dioule() -> void:
+	_pending_mix = _view.compute_dioule(_inventory.config.dioule_max_nodes)
+	if _pending_mix.is_empty():
+		bar.show_hint(tr("DIOULE_CALM_HINT"))
 	else:
-		_set_targeting(not _targeting)
+		_use(BoosterAccess.Kind.DIOULE, BoardLogic.NO_VEHICLE)
 
 
 func _set_targeting(active: bool) -> void:
@@ -110,10 +126,13 @@ func _use(kind: BoosterAccess.Kind, vehicle_id: int) -> void:
 		return
 	_inventory.mark_tutorial_done(kind)
 	booster_used.emit(kind)
-	if kind == BoosterAccess.Kind.APPRENTI:
-		view.play_apprenti()
-	else:
-		view.play_coxeur(vehicle_id)
+	match kind:
+		BoosterAccess.Kind.APPRENTI:
+			view.play_apprenti()
+		BoosterAccess.Kind.DIOULE:
+			view.play_dioule(_pending_mix)
+		_:
+			view.play_coxeur(vehicle_id)
 
 
 func _on_rescue_needed() -> void:
@@ -136,6 +155,20 @@ func _on_advice_pressed() -> void:
 	popup.hide()
 	_view.input_enabled = true
 	_use(_advice.kind, _advice.vehicle_id)
+
+
+## Mesure : joue l'effet périodiquement, sans paiement. Faux si ce pas reste un tap normal.
+func measure_effect(effect: String) -> bool:
+	_measure_steps += 1
+	if effect != "dioule" or _measure_steps % MEASURE_EFFECT_PERIOD != 0 or not _view.can_use_dioule():
+		return false
+	var start: int = Time.get_ticks_usec()
+	var mix: PackedStringArray = _view.compute_dioule(_inventory.config.dioule_max_nodes)
+	PerfProbe.record_effect_ms(float(Time.get_ticks_usec() - start) * 0.001)
+	if mix.is_empty():
+		return false
+	_view.play_dioule(mix)
+	return true
 
 
 ## Mesure : sort de la pop-up sans passer par le toucher.
@@ -165,6 +198,8 @@ func _try_start_tutorial() -> void:
 			_open_tutorial(BoosterAccess.Kind.COXEUR, "TUTORIAL_COXEUR_BAR")
 	elif _inventory.needs_tutorial(BoosterAccess.Kind.APPRENTI) and _view.can_use_apprenti():
 		_open_tutorial(BoosterAccess.Kind.APPRENTI, "TUTORIAL_APPRENTI_BAR")
+	elif _inventory.needs_tutorial(BoosterAccess.Kind.DIOULE) and _view.can_use_dioule():
+		_open_tutorial(BoosterAccess.Kind.DIOULE, "TUTORIAL_DIOULE_BAR")
 
 
 func _open_tutorial(kind: BoosterAccess.Kind, hint_key: String) -> void:
@@ -180,7 +215,10 @@ func _on_tutorial_target_pressed() -> void:
 		return
 	tutorial.close()
 	_view.input_enabled = true
-	_use(_tutorial_kind, _tutorial_vehicle)
+	if _tutorial_kind == BoosterAccess.Kind.DIOULE:
+		_try_dioule()
+	else:
+		_use(_tutorial_kind, _tutorial_vehicle)
 
 
 func _vehicle_rect(vehicle_id: int) -> Rect2:

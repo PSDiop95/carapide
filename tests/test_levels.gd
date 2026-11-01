@@ -1,16 +1,16 @@
 extends GutTest
 ## Tout niveau listé doit être valide, soluble et conforme au plan de difficulté.
 
-const LEVEL_COUNT: int = 10
+const LEVEL_COUNT: int = 15
 ## Prompt 02 A7 : à partir de ce niveau, taper le premier véhicule libre doit perdre.
 const NAIVE_LOSES_FROM: int = 4
-const REQUIRED_MARGIN_MIN: Array[int] = [3, 3, 3, 3, 3, 2, 2, 2, 2, 1]
-const REQUIRED_MARGIN_MAX: Array[int] = [3, 3, 3, 3, 3, 2, 2, 2, 2, 1]
-const REQUIRED_DESTS_MIN: Array[int] = [2, 2, 2, 2, 2, 3, 3, 3, 3, 5]
-const REQUIRED_DESTS_MAX: Array[int] = [2, 2, 2, 3, 3, 5, 5, 5, 5, 5]
+const REQUIRED_MARGIN_MIN: Array[int] = [3, 3, 3, 3, 3, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2]
+const REQUIRED_MARGIN_MAX: Array[int] = [3, 3, 3, 3, 3, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2]
+const REQUIRED_DESTS_MIN: Array[int] = [2, 2, 2, 2, 2, 3, 3, 3, 3, 5, 3, 3, 3, 3, 3]
+const REQUIRED_DESTS_MAX: Array[int] = [2, 2, 2, 3, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
 ## GDD §4 : 8–15 véhicules en 1–5, 15–30 en 6–20.
-const REQUIRED_VEHICLES_MIN: Array[int] = [8, 8, 8, 8, 8, 15, 15, 15, 15, 15]
-const REQUIRED_VEHICLES_MAX: Array[int] = [15, 15, 15, 15, 15, 30, 30, 30, 30, 30]
+const REQUIRED_VEHICLES_MIN: Array[int] = [8, 8, 8, 8, 8, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15]
+const REQUIRED_VEHICLES_MAX: Array[int] = [15, 15, 15, 15, 15, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
 ## GDD §3 : niveau d'apparition de chaque véhicule.
 const UNLOCK_LEVEL: Dictionary[String, int] = {"taxi": 1, "car_rapide": 1, "clando": 6, "ndiaga_ndiaye": 10}
 
@@ -25,7 +25,7 @@ func _level(index: int) -> LevelData:
 	return LevelLoader.load_file(LevelCatalog.level_paths()[index], _catalog).level
 
 
-func test_catalog_lists_ten_levels() -> void:
+func test_catalog_lists_every_level() -> void:
 	assert_eq(LevelCatalog.level_paths().size(), LEVEL_COUNT)
 
 
