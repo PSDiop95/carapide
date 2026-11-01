@@ -5,5 +5,7 @@ export_credentials.cfg
 *.aab
 .claude/
 # GDD privé : ne pas publier (dépôt public)
-docs/
+docs/*
+!docs/perf_log.md
 build/
+android/

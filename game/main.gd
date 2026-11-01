@@ -37,6 +37,8 @@ func _ready() -> void:
 	Services.wallet.balance_changed.connect(_on_balance_changed)
 	_apply_boosters_flag()
 	_start_level(LevelProgress.current_level(Services.save, _paths.size()))
+	_start_measure_if_requested()
+	PerfProbe.log_interactive.call_deferred()
 
 
 func _start_level(level_number: int) -> void:
@@ -121,6 +123,38 @@ func _on_primary_pressed() -> void:
 		_telemetry.level_restarted()
 	_was_lost = false
 	_start_level(_next_level_number)
+
+
+func _start_measure_if_requested() -> void:
+	var effect: String = PerfProbe.requested_effect()
+	if effect.is_empty():
+		return
+	var probe: PerfProbe = PerfProbe.new()
+	probe.setup(self, effect)
+	add_child(probe)
+
+
+## Mesure : tutoriels déjà vus, aucun écran ne bloque le jeu automatique.
+func prepare_for_measure() -> void:
+	if _inventory != null:
+		for kind: BoosterAccess.Kind in BoosterConfig.KIND_KEYS:
+			_inventory.mark_tutorial_done(kind)
+
+
+func jump_to_level(level_number: int) -> void:
+	_was_lost = false
+	_start_level(level_number)
+
+
+## Mesure : un pas de jeu automatique. Recommence dès que la partie se termine ou se bloque.
+func measure_step(effect: String) -> void:
+	if hud.is_result_visible():
+		_was_lost = false
+		_start_level(_level_number)
+	elif _flow != null and _flow.popup.visible:
+		_flow.measure_resolve_popup(effect)
+	elif not view.measure_effect(effect):
+		view.measure_tap()
 
 
 ## Lecture seule, pour les outils de vérification.

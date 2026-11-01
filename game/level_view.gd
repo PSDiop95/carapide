@@ -135,6 +135,18 @@ func play_abandon() -> void:
 	_apply(_rules.abandon())
 
 
+## Mesure : sort le premier véhicule libre, comme un tap.
+func measure_tap() -> void:
+	var free: PackedInt32Array = _rules.free_vehicles()
+	if not free.is_empty():
+		_apply(_rules.tap(free[0]))
+
+
+## Mesure : déclenche l'effet demandé. Faux si rien n'a été joué.
+func measure_effect(_effect: String) -> bool:
+	return false
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	var button: InputEventMouseButton = event as InputEventMouseButton
 	if button != null and button.pressed:

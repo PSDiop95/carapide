@@ -138,6 +138,11 @@ func _on_advice_pressed() -> void:
 	_use(_advice.kind, _advice.vehicle_id)
 
 
+## Mesure : sort de la pop-up sans passer par le toucher.
+func measure_resolve_popup(_effect: String) -> void:
+	_on_abandon_pressed()
+
+
 func _on_abandon_pressed() -> void:
 	popup.hide()
 	_view.input_enabled = true
