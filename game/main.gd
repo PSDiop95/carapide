@@ -1,12 +1,14 @@
 class_name GameMain
 extends Node
-## Boucle de niveau : charge le niveau courant, affiche la fin, enchaîne.
+## Boucle du jeu : hub, niveau, écran de fin, retour au hub.
 
 const TESTER_KEY: String = "playtest_tester"
 const FIRST_TESTER: int = 1
+const HUB_MEASURE_PERIOD: int = 6
 
 var view: LevelView = null
 var hud: Hud = Hud.new()
+var hub: HubScreen = HubScreen.new()
 var current_level: LevelData = null
 
 var _catalog: VehicleCatalog
@@ -20,6 +22,8 @@ var _inventory: BoosterInventory = null
 var _flow: BoosterFlow = null
 var _victory_coins: int = 0
 var _restart_after_loss: bool = false
+var _preloader: LevelPreloader
+var _measure_steps: int = 0
 
 
 func _ready() -> void:
@@ -27,23 +31,51 @@ func _ready() -> void:
 	_catalog = VehicleCatalog.load_default()
 	_config = PresentationConfig.load_default()
 	_paths = LevelCatalog.level_paths()
+	_preloader = LevelPreloader.new(_catalog)
+	GameSettings.apply_vibrations(Services.save)
 	Services.analytics.tester = Services.save.get_int(TESTER_KEY, FIRST_TESTER)
 	_telemetry = LevelTelemetry.new(Services.analytics)
 	hud.configure(_config)
 	add_child(hud)
+	hub.configure(_config, Services.save)
+	add_child(hub)
+	hub.play_pressed.connect(_on_play_pressed)
 	hud.primary_pressed.connect(_on_primary_pressed)
 	hud.new_tester_requested.connect(_on_new_tester_requested)
 	hud.boosters_toggled.connect(_on_boosters_toggled)
 	hud.bonus_pressed.connect(_on_bonus_pressed)
 	Services.wallet.balance_changed.connect(_on_balance_changed)
 	_apply_boosters_flag()
-	_start_level(LevelProgress.current_level(Services.save, _paths.size()))
+	show_hub()
 	_start_measure_if_requested()
 	PerfProbe.log_interactive.call_deferred()
 
 
+## Hub à l'écran : la 3D est coupée, le niveau suivant se prépare en arrière-plan.
+func show_hub() -> void:
+	if view != null:
+		view.queue_free()
+		view = null
+	var next: int = LevelProgress.current_level(Services.save, _paths.size())
+	hud.visible = false
+	hud.hide_result()
+	get_viewport().disable_3d = true
+	hub.show_level(next)
+	hub.set_coins(Services.wallet.balance())
+	hub.visible = true
+	_next_level_number = next
+	_preloader.start(_paths[next - 1])
+
+
+func _on_play_pressed() -> void:
+	var start: int = Time.get_ticks_usec()
+	_start_level(_next_level_number)
+	await RenderingServer.frame_post_draw
+	PerfProbe.record_effect_ms(float(Time.get_ticks_usec() - start) * 0.001)
+
+
 func _start_level(level_number: int) -> void:
-	var loaded: LevelLoadResult = LevelLoader.load_file(_paths[level_number - 1], _catalog)
+	var loaded: LevelLoadResult = _preloader.take(_paths[level_number - 1])
 	if not loaded.is_ok():
 		push_error("Niveau invalide : %s" % "; ".join(loaded.errors))
 		return
@@ -52,6 +84,9 @@ func _start_level(level_number: int) -> void:
 	_level_number = level_number
 	_next_level_number = level_number
 	current_level = loaded.level
+	hub.visible = false
+	hud.visible = true
+	get_viewport().disable_3d = false
 	view = LevelView.new()
 	add_child(view)
 	if _inventory != null:
@@ -123,11 +158,14 @@ func _on_bonus_pressed() -> void:
 	hud.show_coins_earned(tr("VICTORY_COINS") % _victory_coins)
 
 
+## Défaite : on recommence le niveau. Victoire : retour au hub.
 func _on_primary_pressed() -> void:
 	if _was_lost:
 		_telemetry.level_restarted()
-	_was_lost = false
-	_start_level(_next_level_number)
+		_was_lost = false
+		_start_level(_next_level_number)
+	else:
+		show_hub()
 
 
 func _start_measure_if_requested() -> void:
@@ -141,6 +179,7 @@ func _start_measure_if_requested() -> void:
 
 ## Mesure : tutoriels déjà vus, aucun écran ne bloque le jeu automatique.
 func prepare_for_measure() -> void:
+	Services.save.set_int(LevelProgress.KEY, PerfProbe.REFERENCE_LEVEL)
 	if _inventory != null:
 		for kind: BoosterAccess.Kind in BoosterConfig.KIND_KEYS:
 			_inventory.mark_tutorial_done(kind)
@@ -153,7 +192,12 @@ func jump_to_level(level_number: int) -> void:
 
 ## Mesure : un pas de jeu automatique. Recommence dès que la partie se termine ou se bloque.
 func measure_step(effect: String) -> void:
-	if hud.is_result_visible():
+	_measure_steps += 1
+	if hub.visible:
+		_on_play_pressed()
+	elif effect == "hub" and _measure_steps % HUB_MEASURE_PERIOD == 0:
+		show_hub()
+	elif hud.is_result_visible():
 		_was_lost = false
 		_start_level(_level_number)
 	elif _flow != null and _flow.popup.visible:
@@ -214,6 +258,7 @@ func _apply_boosters_flag() -> void:
 
 func _on_balance_changed(balance: int) -> void:
 	hud.set_coins(balance if _inventory != null else -1)
+	hub.set_coins(balance)
 
 
 func _on_booster_used(kind: BoosterAccess.Kind) -> void:

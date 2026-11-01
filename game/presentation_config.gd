@@ -31,6 +31,11 @@ var dioule_hop_duration: float = 0.0
 var dioule_hop_height: float = 0.0
 var garage_move_duration: float = 0.0
 var garage_vehicle_scale: float = 1.0
+var hub_queue_count: int = 0
+var hub_queue_pitch: float = 1.0
+var hub_queue_speed: float = 0.0
+var hub_queue_phase: float = 0.0
+var hub_queue_bob: float = 0.0
 var dest_colors: Dictionary[String, Color] = {}
 var dest_pictos: Dictionary[String, String] = {}
 var dest_name_keys: Dictionary[String, String] = {}
@@ -65,6 +70,11 @@ static func load_default() -> PresentationConfig:
 	config.dioule_hop_height = raw["dioule_hop_height"]
 	config.garage_move_duration = raw["garage_move_duration"]
 	config.garage_vehicle_scale = raw["garage_vehicle_scale"]
+	config.hub_queue_count = _read_int(raw, "hub_queue_count")
+	config.hub_queue_pitch = raw["hub_queue_pitch"]
+	config.hub_queue_speed = raw["hub_queue_speed"]
+	config.hub_queue_phase = raw["hub_queue_phase"]
+	config.hub_queue_bob = raw["hub_queue_bob"]
 	config._load_destinations()
 	return config
 

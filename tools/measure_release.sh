@@ -38,6 +38,7 @@ MARKER_DIR="/storage/emulated/0/Android/data/$PKG/files"
 "$ADB" shell "mkdir -p $MARKER_DIR && echo $EFFECT > $MARKER_DIR/perf_probe.txt" || exit 1
 "$ADB" shell am start -n "$PKG/$ACTIVITY" > /dev/null
 RAM_PEAK=0
+rm -f build/ram_series.txt
 RESULT=""
 for _ in $(seq 1 60); do
 	sleep 2
@@ -48,6 +49,7 @@ for _ in $(seq 1 60); do
 ' > build/meminfo_peak.txt
 	fi
 	RESULT="$("$ADB" logcat -d -s godot:I | tr -d '\r' | grep 'CARAPIDE_PERF.*done=1' | tail -1)"
+	echo "$KB" >> build/ram_series.txt
 	[ -n "$RESULT" ] && break
 done
 [ -n "$RESULT" ] || { "$ADB" logcat -d -s godot:E godot:I | tail -30; echo "ECHEC sonde : pas de résultat"; exit 1; }
@@ -57,7 +59,8 @@ P5="$(echo "$RESULT" | sed -E 's/.*fps_p5=([0-9.]+).*/\1/')"
 DRAWS="$(echo "$RESULT" | sed -E 's/.*draw_peak=([0-9]+).*/\1/')"
 
 # Démarrages à froid : médiane de 5, sans sonde.
-"$ADB" shell rm -f "$MARKER_DIR/perf_probe.txt"
+# Tout dans une chaîne : sinon MSYS réécrit le chemin en chemin Windows et le témoin reste.
+"$ADB" shell "rm -f $MARKER_DIR/perf_probe.txt"
 # am start -W ne couvre que la première image : le démarrage réel va du START à l'écran interactif, lus dans logcat.
 TIMES=()
 WINDOW_TIMES=()

@@ -24,5 +24,10 @@
   "dioule_hop_duration": 0.3,
   "dioule_hop_height": 1.0,
   "garage_move_duration": 0.4,
-  "garage_vehicle_scale": 0.3
+  "garage_vehicle_scale": 0.3,
+  "hub_queue_count": 8,
+  "hub_queue_pitch": 1.4,
+  "hub_queue_speed": 4.0,
+  "hub_queue_phase": 0.7,
+  "hub_queue_bob": 6.0
 }

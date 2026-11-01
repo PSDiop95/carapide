@@ -50,6 +50,9 @@ func _ready() -> void:
 func _run() -> void:
 	var count: int = LevelCatalog.level_paths().size()
 	await _frames(SETTLE_FRAMES)
+	_expect(_main.hub.visible, "Le jeu doit s'ouvrir sur le hub")
+	_capture("hub")
+	await _enter_level_from_hub()
 	await _check_gestures()
 	await _check_hidden_panel()
 	await _check_danger_and_flight()
@@ -70,6 +73,7 @@ func _run() -> void:
 		_capture("level_%02d_end" % number)
 		await _check_coins_after_win(number)
 		await _click_button()
+		await _enter_level_from_hub()
 	_expect(LevelProgress.current_level(Services.save, count) == 1, "Progression non revenue au niveau 1")
 	_check_coins_after_relaunch()
 
@@ -91,6 +95,15 @@ func _check_coins_after_win(number: int) -> void:
 		await get_tree().process_frame
 	_expected_coins += 20
 	_expect(Services.wallet.balance() == _expected_coins, "×2 : %d pièces au lieu de %d" % [Services.wallet.balance(), _expected_coins])
+
+
+## Suivant ramène au hub ; Jouer lance le niveau et masque le hub.
+func _enter_level_from_hub() -> void:
+	await _frames(SETTLE_FRAMES)
+	_expect(_main.hub.visible, "Hub absent après la victoire")
+	await _click(_main.hub.play_button.get_global_rect().get_center())
+	await _frames(SETTLE_FRAMES)
+	_expect(not _main.hub.visible and _main.view != null, "Jouer n'a pas lancé le niveau")
 
 
 func _check_coins_after_relaunch() -> void:

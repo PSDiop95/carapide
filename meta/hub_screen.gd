@@ -101,12 +101,15 @@ func _process(delta: float) -> void:
 
 
 func _animate_passengers() -> void:
+	for index: int in passengers.multimesh.instance_count:
+		passengers.multimesh.set_instance_transform_2d(index, Transform2D(0.0, passenger_position(index)))
+
+
+func passenger_position(index: int) -> Vector2:
 	var count: int = passengers.multimesh.instance_count
 	var pitch: float = PASSENGER_SIZE.x * _config.hub_queue_pitch
-	for index: int in count:
-		var phase: float = _time * _config.hub_queue_speed + float(index) * _config.hub_queue_phase
-		var offset: Vector2 = Vector2((float(index) - float(count - 1) * 0.5) * pitch, sin(phase) * _config.hub_queue_bob)
-		passengers.multimesh.set_instance_transform_2d(index, Transform2D(0.0, offset))
+	var phase: float = _time * _config.hub_queue_speed + float(index) * _config.hub_queue_phase
+	return Vector2((float(index) - float(count - 1) * 0.5) * pitch, sin(phase) * _config.hub_queue_bob)
 
 
 func _build_top() -> void:
@@ -144,11 +147,6 @@ func _build_center() -> void:
 	_root.add_child(passengers)
 	_animate_passengers()
 	play_button = _make_button(tr("HUB_PLAY"), PLAY_BUTTON_SIZE, PLAY_FONT_SIZE)
-	play_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	play_button.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	play_button.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	play_button.offset_bottom = -PLAY_BOTTOM
-	play_button.offset_top = -PLAY_BOTTOM - PLAY_BUTTON_SIZE.y
 	play_button.pressed.connect(play_pressed.emit)
 
 
@@ -202,6 +200,7 @@ func _place_center() -> void:
 	var center: Vector2 = Vector2(view_size.x * 0.5, view_size.y * CENTER_RATIO)
 	_car.position = center - CAR_SIZE * 0.5
 	passengers.position = center + Vector2(0.0, QUEUE_GAP + CAR_SIZE.y * 0.5)
+	play_button.position = Vector2((view_size.x - PLAY_BUTTON_SIZE.x) * 0.5, view_size.y - PLAY_BOTTOM - PLAY_BUTTON_SIZE.y)
 	var side_top: float = view_size.y * SIDE_TOP_RATIO
 	shop_button.position = Vector2(MARGIN, side_top)
 	station_button.position = Vector2(view_size.x - SIDE_BUTTON_SIZE.x - MARGIN, side_top)

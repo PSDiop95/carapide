@@ -59,9 +59,9 @@ func test_hub_shows_level_coins_and_eight_passengers_in_one_multimesh() -> void:
 
 func test_passengers_move_over_time() -> void:
 	var hub: HubScreen = _hub(SaveService.new())
-	var before: Transform2D = hub.passengers.multimesh.get_instance_transform_2d(0)
+	var before: Vector2 = hub.passenger_position(0)
 	hub._process(0.3)
-	assert_ne(hub.passengers.multimesh.get_instance_transform_2d(0), before)
+	assert_ne(hub.passenger_position(0), before)
 
 
 func test_shop_is_a_placeholder() -> void:
