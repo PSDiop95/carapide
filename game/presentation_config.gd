@@ -36,6 +36,9 @@ var hub_queue_pitch: float = 1.0
 var hub_queue_speed: float = 0.0
 var hub_queue_phase: float = 0.0
 var hub_queue_bob: float = 0.0
+var victory_cheer_height: float = 0.0
+var victory_cheer_speed: float = 0.0
+var victory_cheer_swing: float = 0.0
 var dest_colors: Dictionary[String, Color] = {}
 var dest_pictos: Dictionary[String, String] = {}
 var dest_name_keys: Dictionary[String, String] = {}
@@ -75,6 +78,9 @@ static func load_default() -> PresentationConfig:
 	config.hub_queue_speed = raw["hub_queue_speed"]
 	config.hub_queue_phase = raw["hub_queue_phase"]
 	config.hub_queue_bob = raw["hub_queue_bob"]
+	config.victory_cheer_height = raw["victory_cheer_height"]
+	config.victory_cheer_speed = raw["victory_cheer_speed"]
+	config.victory_cheer_swing = raw["victory_cheer_swing"]
 	config._load_destinations()
 	return config
 

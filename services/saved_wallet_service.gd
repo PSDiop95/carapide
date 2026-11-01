@@ -7,8 +7,9 @@ const KEY: String = "wallet_coins"
 var _save: SaveService
 
 
-func _init(save: SaveService) -> void:
+func _init(save: SaveService, analytics_service: AnalyticsService = null) -> void:
 	_save = save
+	analytics = analytics_service
 	_balance = save.get_int(KEY, 0)
 
 

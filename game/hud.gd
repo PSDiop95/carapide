@@ -29,6 +29,7 @@ var playtest_panel: PlaytestPanel = PlaytestPanel.new()
 var result_title: Label = Label.new()
 var result_detail: Label = Label.new()
 var bonus_button: Button = Button.new()
+var apprentice: ApprenticeCheer = ApprenticeCheer.new()
 ## Sous l'écran de fin : barre, pop-up et tutoriel des boosters.
 var booster_layer: Control = Control.new()
 
@@ -102,10 +103,19 @@ func show_result(title_key: String, button_key: String) -> void:
 	result_title.text = tr(title_key)
 	primary_button.text = tr(button_key)
 	_end_screen.visible = true
+	_set_play_interface_visible(false)
+
+
+## Écran de victoire : l'apprenti célèbre au-dessus du titre.
+func show_victory(title_key: String, button_key: String) -> void:
+	show_result(title_key, button_key)
+	apprentice.visible = true
 
 
 func hide_result() -> void:
 	_end_screen.visible = false
+	apprentice.visible = false
+	_set_play_interface_visible(true)
 	result_detail.visible = false
 	bonus_button.visible = false
 
@@ -159,6 +169,13 @@ func is_result_visible() -> bool:
 	return _end_screen.visible
 
 
+## Sous l'écran de fin, ces contrôles ne servent plus et coûtent des draw calls.
+func _set_play_interface_visible(shown: bool) -> void:
+	booster_layer.visible = shown
+	_chips_row.visible = shown
+	_passengers_label.visible = shown
+
+
 func _build_level_button() -> void:
 	level_button.flat = true
 	level_button.add_theme_font_size_override("font_size", FONT_SIZE)
@@ -210,6 +227,9 @@ func _build_end_screen() -> void:
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_end_screen.add_child(column)
+	apprentice.configure(_config)
+	apprentice.visible = false
+	column.add_child(apprentice)
 	result_title.add_theme_font_size_override("font_size", TITLE_FONT_SIZE)
 	result_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	result_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

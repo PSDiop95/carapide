@@ -22,6 +22,7 @@ var _main: GameMain
 var _directory: String
 var _failures: PackedStringArray = PackedStringArray()
 var _max_draw_calls: float = 0.0
+var _max_draw_level: int = 0
 var _boosters: bool = true
 var _expected_coins: int = 0
 var _max_advice_ms: int = 0
@@ -43,7 +44,7 @@ func _ready() -> void:
 	await _run()
 	for failure: String in _failures:
 		printerr(failure)
-	print("Boosters %s, échecs : %d, draw calls max : %d, pièces : %d, conseil max : %d ms" % [_boosters, _failures.size(), int(_max_draw_calls), Services.wallet.balance(), _max_advice_ms])
+	print("Boosters %s, échecs : %d, draw calls max : %d (niveau %d), pièces : %d, conseil max : %d ms" % [_boosters, _failures.size(), int(_max_draw_calls), _max_draw_level, Services.wallet.balance(), _max_advice_ms])
 	get_tree().quit(1 if _failures.size() > 0 else 0)
 
 
@@ -83,6 +84,7 @@ func _check_coins_after_win(number: int) -> void:
 	if not _boosters:
 		_expect(Services.wallet.balance() == 0, "Sans boosters : des pièces gagnées")
 		return
+	_expect(_main.hud.apprentice.visible, "Niveau %d : apprenti absent de la victoire" % number)
 	_expected_coins += 20
 	_expect(Services.wallet.balance() == _expected_coins, "Niveau %d : %d pièces au lieu de %d" % [number, Services.wallet.balance(), _expected_coins])
 	if number != BONUS_LEVEL:
@@ -384,7 +386,10 @@ func _play_solution(number: int) -> void:
 	for vehicle_id: int in result.solution:
 		_tap(_main.view.vehicle_screen_position(_main.current_level.vehicles[vehicle_id]))
 		await _frames(1)
-		_max_draw_calls = maxf(_max_draw_calls, Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+		var draw_calls: float = Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+		if draw_calls > _max_draw_calls:
+			_max_draw_calls = draw_calls
+			_max_draw_level = number
 	await _wait_for_result()
 
 

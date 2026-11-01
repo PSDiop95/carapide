@@ -198,7 +198,7 @@ func test_inventory_pays_garage_with_coins_or_ad_not_stock() -> void:
 	assert_eq(inventory.config.price(BoosterAccess.Kind.GARAGE), 900)
 	assert_eq(inventory.garage_max_uses(), 2)
 	assert_eq(inventory.offer(BoosterAccess.Kind.GARAGE), BoosterInventory.Offer.AD)
-	wallet.add(900)
+	wallet.add(900, "test")
 	assert_eq(inventory.offer(BoosterAccess.Kind.GARAGE), BoosterInventory.Offer.COINS)
 
 

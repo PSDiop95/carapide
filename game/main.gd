@@ -128,16 +128,16 @@ func _show_victory() -> void:
 	_telemetry.level_won(Time.get_ticks_msec())
 	Events.level_won.emit(current_level.id)
 	if was_last:
-		hud.show_result("ALL_DONE_TITLE", "REPLAY_BUTTON")
+		hud.show_victory("ALL_DONE_TITLE", "REPLAY_BUTTON")
 	else:
-		hud.show_result("WON_TITLE", "NEXT_BUTTON")
+		hud.show_victory("WON_TITLE", "NEXT_BUTTON")
 	if _inventory != null:
 		_award_victory()
 
 
 func _award_victory() -> void:
-	var config: BoosterConfig = _inventory.config
-	Services.wallet.add(config.victory_coins)
+	var config: EconomyConfig = _inventory.config.economy
+	Services.wallet.add(config.victory_coins, WalletService.SOURCE_VICTORY)
 	_victory_coins = config.victory_coins
 	hud.show_coins_earned(tr("VICTORY_COINS") % _victory_coins)
 	if Services.ads.is_rewarded_available():
@@ -152,8 +152,8 @@ func _on_bonus_pressed() -> void:
 	hud.hide_ad_curtain()
 	if not watched:
 		return
-	var multiplier: int = _inventory.config.victory_ad_multiplier
-	Services.wallet.add(_victory_coins * (multiplier - 1))
+	var multiplier: int = _inventory.config.economy.victory_ad_multiplier
+	Services.wallet.add(_victory_coins * (multiplier - 1), WalletService.SOURCE_VICTORY_AD)
 	_victory_coins *= multiplier
 	hud.show_coins_earned(tr("VICTORY_COINS") % _victory_coins)
 
@@ -200,6 +200,8 @@ func measure_step(effect: String) -> void:
 	elif hud.is_result_visible():
 		_was_lost = false
 		_start_level(_level_number)
+	elif effect == "victory" and _measure_steps % HUB_MEASURE_PERIOD == 0:
+		_show_victory()
 	elif _flow != null and _flow.popup.visible:
 		_flow.measure_resolve_popup(effect)
 	elif _flow == null or not _flow.measure_effect(effect):

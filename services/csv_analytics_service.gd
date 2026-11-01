@@ -2,8 +2,8 @@ class_name CsvAnalyticsService
 extends AnalyticsService
 ## Télémétrie de playtest : une ligne par événement, écrite aussitôt (rien de perdu si le jeu est tué).
 
-const HEADER: String = "tester,session,unix_time,event,level,occupied_slots,head_dest,moves,blocked_taps,duration_s,booster"
-const PARAM_COLUMNS: Array[String] = ["level", "occupied_slots", "head_dest", "moves", "blocked_taps", "duration_s", "booster"]
+const HEADER: String = "tester,session,unix_time,event,level,occupied_slots,head_dest,moves,blocked_taps,duration_s,booster,source,amount,balance"
+const PARAM_COLUMNS: Array[String] = ["level", "occupied_slots", "head_dest", "moves", "blocked_taps", "duration_s", "booster", "source", "amount", "balance"]
 
 var _path: String
 var _session: int = int(Time.get_unix_time_from_system())

@@ -9,3 +9,5 @@ Release, installation neuve, 1er lancement (cache froid) pour FPS, RAM et draw c
 | 2026-11-01 | 2eff557+ | F1 Dioulé | 143.6 | 1873 | 72.0 | 56.5 | 347 | 114 | A23 3,6 Go (pas la réf. 2 Go) |
 | 2026-11-01 | 060b94c+ | F2 Garage | 143.6 | 1943 | 72.0 | 67.3 | 341 | 114 | A23 3,6 Go (pas la réf. 2 Go) |
 | 2026-11-01 | dc4511e+ | F3 Hub | 143.6 | 2203 | 72.0 | 47.4 | 329 | 115 | A23 3,6 Go (pas la réf. 2 Go) |
+| 2026-11-01 | 4fa93a2+ | F4 Victoire et économie (rouge : écran de fin, draw calls) | 143.6 | 2244 | 72.0 | 55.4 | 330 | 125 | A23 3,6 Go (pas la réf. 2 Go) |
+| 2026-11-01 | 4fa93a2+ | F4 Victoire et économie | 143.6 | 2326 | 70.0 | 59.7 | 322 | 115 | A23 3,6 Go (pas la réf. 2 Go) |

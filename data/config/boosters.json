@@ -1,12 +1,9 @@
 {
   "boosters": {
-    "coxeur": { "price": 80, "unlock_level": 3, "gift": 3 },
-    "apprenti": { "price": 120, "unlock_level": 8, "gift": 3 },
-    "dioule": { "price": 120, "unlock_level": 13, "gift": 3 },
-    "garage": { "price": 900, "unlock_level": 1, "gift": 0 }
+    "coxeur": { "unlock_level": 3 },
+    "apprenti": { "unlock_level": 8 },
+    "dioule": { "unlock_level": 13 },
+    "garage": { "unlock_level": 1 }
   },
-  "dioule_max_nodes": 260,
-  "garage_max_uses": 2,
-  "victory_coins": 20,
-  "victory_ad_multiplier": 2
+  "dioule_max_nodes": 260
 }

@@ -1,6 +1,6 @@
 class_name BoosterConfig
 extends RefCounted
-## Prix, déblocages et gains de data/config/boosters.json.
+## Déblocages de data/config/boosters.json ; prix et cadeaux lus dans l'économie.
 
 const PATH: String = "res://data/config/boosters.json"
 const KIND_KEYS: Dictionary[BoosterAccess.Kind, String] = {
@@ -11,9 +11,7 @@ const KIND_KEYS: Dictionary[BoosterAccess.Kind, String] = {
 }
 
 var dioule_max_nodes: int = 0
-var garage_max_uses: int = 0
-var victory_coins: int = 0
-var victory_ad_multiplier: int = 1
+var economy: EconomyConfig = EconomyConfig.load_default()
 
 var _entries: Dictionary = {}
 
@@ -27,14 +25,11 @@ static func load_default() -> BoosterConfig:
 	var raw: Dictionary = parsed
 	config._entries = raw["boosters"]
 	config.dioule_max_nodes = _read_int(raw, "dioule_max_nodes")
-	config.garage_max_uses = _read_int(raw, "garage_max_uses")
-	config.victory_coins = _read_int(raw, "victory_coins")
-	config.victory_ad_multiplier = _read_int(raw, "victory_ad_multiplier")
 	return config
 
 
 func price(kind: BoosterAccess.Kind) -> int:
-	return _read_int(_entry(kind), "price")
+	return economy.booster_price(KIND_KEYS[kind])
 
 
 func unlock_level(kind: BoosterAccess.Kind) -> int:
@@ -42,7 +37,11 @@ func unlock_level(kind: BoosterAccess.Kind) -> int:
 
 
 func gift(kind: BoosterAccess.Kind) -> int:
-	return _read_int(_entry(kind), "gift")
+	return economy.booster_gift(KIND_KEYS[kind])
+
+
+func garage_max_uses() -> int:
+	return economy.garage_max_uses
 
 
 func _entry(kind: BoosterAccess.Kind) -> Dictionary:

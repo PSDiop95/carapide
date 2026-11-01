@@ -56,7 +56,7 @@ func can_obtain(kind: BoosterAccess.Kind) -> bool:
 
 
 func garage_max_uses() -> int:
-	return config.garage_max_uses
+	return config.garage_max_uses()
 
 
 ## Faux si le paiement échoue (pub non vue, plus rien à payer) ; rien n'est alors débité.
@@ -66,7 +66,7 @@ func pay(kind: BoosterAccess.Kind) -> bool:
 			_save.set_int(_key(STOCK_KEY, kind), stock(kind) - 1)
 			return true
 		Offer.COINS:
-			return _wallet.try_spend(config.price(kind))
+			return _wallet.try_spend(config.price(kind), WalletService.SOURCE_BOOSTER % BoosterConfig.KIND_KEYS[kind])
 		Offer.AD:
 			return await _ads.show_rewarded()
 	return false

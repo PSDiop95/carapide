@@ -29,5 +29,8 @@
   "hub_queue_pitch": 1.4,
   "hub_queue_speed": 4.0,
   "hub_queue_phase": 0.7,
-  "hub_queue_bob": 6.0
+  "hub_queue_bob": 6.0,
+  "victory_cheer_height": 36.0,
+  "victory_cheer_speed": 6.0,
+  "victory_cheer_swing": 0.9
 }

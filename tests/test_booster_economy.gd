@@ -33,23 +33,23 @@ func test_config_matches_the_prompt() -> void:
 	assert_eq(config.price(BoosterAccess.Kind.APPRENTI), 120)
 	assert_eq(config.unlock_level(BoosterAccess.Kind.APPRENTI), 8)
 	assert_eq(config.gift(BoosterAccess.Kind.COXEUR), 3)
-	assert_eq(config.victory_coins, 20)
-	assert_eq(config.victory_ad_multiplier, 2)
+	assert_eq(config.economy.victory_coins, 20)
+	assert_eq(config.economy.victory_ad_multiplier, 2)
 
 
 func test_wallet_refuses_overdraft_without_debit() -> void:
 	var wallet: WalletService = WalletService.new()
-	wallet.add(50)
-	assert_false(wallet.try_spend(80))
+	wallet.add(50, "test")
+	assert_false(wallet.try_spend(80, "test"))
 	assert_eq(wallet.balance(), 50)
-	assert_true(wallet.try_spend(50))
+	assert_true(wallet.try_spend(50, "test"))
 	assert_eq(wallet.balance(), 0)
 
 
 func test_coins_and_stock_survive_a_relaunch() -> void:
 	var save: FileSaveService = FileSaveService.new(SAVE_PATH)
 	var wallet: SavedWalletService = SavedWalletService.new(save)
-	wallet.add(140)
+	wallet.add(140, "test")
 	var inventory: BoosterInventory = _inventory(save, wallet, _ads())
 	inventory.enter_level(3)
 	await inventory.pay(BoosterAccess.Kind.COXEUR)
@@ -80,7 +80,7 @@ func test_payment_order_is_stock_then_coins_then_ad() -> void:
 	inventory.enter_level(3)
 	for _gift: int in 3:
 		assert_true(await inventory.pay(BoosterAccess.Kind.COXEUR))
-	wallet.add(90)
+	wallet.add(90, "test")
 	assert_eq(inventory.offer(BoosterAccess.Kind.COXEUR), BoosterInventory.Offer.COINS)
 	assert_true(await inventory.pay(BoosterAccess.Kind.COXEUR))
 	assert_eq(wallet.balance(), 10)
@@ -122,7 +122,7 @@ func test_no_stock_no_coins_no_ad_means_lost_not_blocked() -> void:
 
 func test_reset_clears_coins_stock_and_tutorial() -> void:
 	var wallet: WalletService = WalletService.new()
-	wallet.add(100)
+	wallet.add(100, "test")
 	var inventory: BoosterInventory = _inventory(SaveService.new(), wallet, _ads())
 	inventory.enter_level(3)
 	inventory.mark_tutorial_done(BoosterAccess.Kind.COXEUR)
