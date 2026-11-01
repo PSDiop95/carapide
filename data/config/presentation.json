@@ -1,0 +1,12 @@
+{
+  "camera_tilt_degrees": 50.0,
+  "exit_duration": 0.4,
+  "blocked_highlight_duration": 1.0,
+  "bump_distance": 0.25,
+  "bump_duration": 0.2,
+  "boarding_rate": 8.0,
+  "depart_duration": 0.5,
+  "tap_tolerance": 0.15,
+  "danger_warning_free_slots": 1,
+  "danger_critical_free_slots": 0
+}

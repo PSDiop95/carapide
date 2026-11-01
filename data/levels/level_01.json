@@ -1,0 +1,16 @@
+{
+  "id": 1,
+  "slots": 4,
+  "board": [8, 8],
+  "vehicles": [
+    {"type": "taxi", "dest": "colobane", "pos": [1.5, 6], "angle": 90},
+    {"type": "car_rapide", "dest": "petersen", "pos": [1.5, 2.5], "angle": 90},
+    {"type": "taxi", "dest": "petersen", "pos": [4, 5], "angle": 45},
+    {"type": "car_rapide", "dest": "colobane", "pos": [6.5, 3], "angle": 180}
+  ],
+  "queue": [
+    {"dest": "colobane", "count": 4},
+    {"dest": "petersen", "count": 12},
+    {"dest": "colobane", "count": 8}
+  ]
+}
