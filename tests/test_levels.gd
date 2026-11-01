@@ -2,6 +2,8 @@ extends GutTest
 ## Tout niveau listé doit être valide, soluble et conforme au plan de difficulté.
 
 const LEVEL_COUNT: int = 10
+## Prompt 02 A7 : à partir de ce niveau, taper le premier véhicule libre doit perdre.
+const NAIVE_LOSES_FROM: int = 4
 const REQUIRED_MARGIN_MIN: Array[int] = [3, 3, 3, 3, 3, 2, 2, 2, 2, 1]
 const REQUIRED_MARGIN_MAX: Array[int] = [3, 3, 3, 3, 3, 2, 2, 2, 2, 1]
 const REQUIRED_DESTS_MIN: Array[int] = [2, 2, 2, 2, 2, 3, 3, 3, 3, 5]
@@ -61,6 +63,11 @@ func test_solution_of_every_level_wins_through_game_rules() -> void:
 		for vehicle_id: int in Solver.solve(level, level.slots).solution:
 			rules.tap(vehicle_id)
 		assert_eq(rules.status, GameRules.Status.WON, "Niveau %d" % (index + 1))
+
+
+func test_naive_play_loses_from_level_four() -> void:
+	for number: int in range(NAIVE_LOSES_FROM, LEVEL_COUNT + 1):
+		assert_false(Solver.naive_play(_level(number - 1)), "Niveau %d gagné au jeu naïf" % number)
 
 
 func test_jam_has_real_dependencies_from_level_three() -> void:

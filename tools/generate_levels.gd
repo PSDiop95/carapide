@@ -1,12 +1,17 @@
 extends SceneTree
 ## Régénère data/levels/ : godot --headless -s res://tools/generate_levels.gd
 ## Déterministe : même seed, mêmes niveaux.
+## Les niveaux livrés sont retouchés à la main : régénérer les écrase, d'où `-- --overwrite`.
 
 const LEVELS_DIR: String = "res://data/levels/"
 const ATTEMPTS_PER_LEVEL: int = 200
 
 
 func _init() -> void:
+	if not OS.get_cmdline_user_args().has("--overwrite"):
+		printerr("Refus : niveaux retouchés à la main. Relancer avec -- --overwrite pour les écraser.")
+		quit(1)
+		return
 	var catalog: VehicleCatalog = VehicleCatalog.load_default()
 	var order: Array[String] = []
 	var failures: int = 0

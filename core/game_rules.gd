@@ -41,6 +41,21 @@ func vehicle_at(x: float, y: float, tolerance: float) -> int:
 	return _board.vehicle_at(x, y, tolerance)
 
 
+## Lecture seule : destination en tête de file, vide si la file est vide.
+func head_dest() -> String:
+	return _queue.head_dest()
+
+
+## Lecture seule : places occupées dans la gare.
+func occupied_slots() -> int:
+	return _station.parked_count()
+
+
+## Lecture seule : véhicules du bouchon dont la voie est libre, par id croissant.
+func free_vehicles() -> PackedInt32Array:
+	return _board.free_vehicles()
+
+
 func passengers_remaining() -> int:
 	return _queue.total_remaining()
 

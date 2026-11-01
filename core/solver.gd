@@ -35,6 +35,17 @@ static func solve(level: LevelData, slots: int, max_nodes: int = DEFAULT_MAX_NOD
 	return solver._result(false, -1, -1)
 
 
+## Joue en tapant toujours le premier véhicule libre, sans regarder la file. Vrai si ce jeu gagne.
+static func naive_play(level: LevelData) -> bool:
+	var rules: GameRules = GameRules.new(level)
+	while rules.status == GameRules.Status.PLAYING:
+		var free: PackedInt32Array = rules.free_vehicles()
+		if free.is_empty():
+			return false
+		rules.tap(free[0])
+	return rules.status == GameRules.Status.WON
+
+
 func _init(level: LevelData, max_nodes: int) -> void:
 	_max_nodes = max_nodes
 	var dest_ids: Dictionary[String, int] = {}

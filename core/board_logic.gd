@@ -54,6 +54,14 @@ func any_can_exit() -> bool:
 	return false
 
 
+func free_vehicles() -> PackedInt32Array:
+	var free: PackedInt32Array = PackedInt32Array()
+	for id: int in _boxes.size():
+		if can_exit(id):
+			free.append(id)
+	return free
+
+
 ## Tous les bloqueurs géométriques d'un véhicule, utilisés par le solveur.
 func blockers_of(vehicle_id: int) -> PackedInt32Array:
 	return _blockers[vehicle_id]
