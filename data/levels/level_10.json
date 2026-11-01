@@ -1,0 +1,268 @@
+{
+  "board": [
+    10.0,
+    12.0
+  ],
+  "id": 10,
+  "queue": [
+    {
+      "count": 4,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 12,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "rufisque"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "pikine"
+    },
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 8,
+      "dest": "rufisque"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "pikine"
+    },
+    {
+      "count": 4,
+      "dest": "rufisque"
+    },
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "pikine"
+    },
+    {
+      "count": 16,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 12,
+      "dest": "colobane"
+    },
+    {
+      "count": 12,
+      "dest": "parcelles"
+    }
+  ],
+  "slots": 4,
+  "vehicles": [
+    {
+      "angle": 90.0,
+      "dest": "colobane",
+      "pos": [
+        9.0,
+        8.0
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 120.0,
+      "dest": "petersen",
+      "pos": [
+        6.0,
+        7.5
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 330.0,
+      "dest": "parcelles",
+      "pos": [
+        3.5,
+        6.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 330.0,
+      "dest": "pikine",
+      "pos": [
+        6.5,
+        4.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 150.0,
+      "dest": "rufisque",
+      "pos": [
+        8.5,
+        1.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 120.0,
+      "dest": "colobane",
+      "pos": [
+        1.5,
+        4.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 0.0,
+      "dest": "petersen",
+      "pos": [
+        1.0,
+        11.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 180.0,
+      "dest": "parcelles",
+      "pos": [
+        3.0,
+        9.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 180.0,
+      "dest": "pikine",
+      "pos": [
+        7.0,
+        10.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 150.0,
+      "dest": "rufisque",
+      "pos": [
+        3.0,
+        1.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 90.0,
+      "dest": "colobane",
+      "pos": [
+        9.0,
+        11.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 330.0,
+      "dest": "petersen",
+      "pos": [
+        4.0,
+        2.5
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 270.0,
+      "dest": "parcelles",
+      "pos": [
+        0.5,
+        2.0
+      ],
+      "type": "ndiaga_ndiaye"
+    },
+    {
+      "angle": 240.0,
+      "dest": "pikine",
+      "pos": [
+        1.0,
+        8.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 270.0,
+      "dest": "rufisque",
+      "pos": [
+        6.5,
+        1.0
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 90.0,
+      "dest": "colobane",
+      "pos": [
+        4.5,
+        10.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 330.0,
+      "dest": "petersen",
+      "pos": [
+        8.5,
+        3.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 330.0,
+      "dest": "parcelles",
+      "pos": [
+        8.0,
+        4.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 0.0,
+      "dest": "pikine",
+      "pos": [
+        9.0,
+        5.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 90.0,
+      "dest": "rufisque",
+      "pos": [
+        5.5,
+        11.0
+      ],
+      "type": "taxi"
+    }
+  ]
+}

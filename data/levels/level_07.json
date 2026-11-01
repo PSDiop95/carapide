@@ -1,0 +1,216 @@
+{
+  "board": [
+    9.0,
+    11.0
+  ],
+  "id": 7,
+  "queue": [
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "pikine"
+    },
+    {
+      "count": 8,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "pikine"
+    },
+    {
+      "count": 12,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "pikine"
+    },
+    {
+      "count": 8,
+      "dest": "colobane"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "pikine"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 4,
+      "dest": "parcelles"
+    },
+    {
+      "count": 4,
+      "dest": "petersen"
+    },
+    {
+      "count": 8,
+      "dest": "colobane"
+    }
+  ],
+  "slots": 4,
+  "vehicles": [
+    {
+      "angle": 0.0,
+      "dest": "colobane",
+      "pos": [
+        5.0,
+        1.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 300.0,
+      "dest": "petersen",
+      "pos": [
+        6.5,
+        4.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 180.0,
+      "dest": "parcelles",
+      "pos": [
+        4.0,
+        9.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 210.0,
+      "dest": "pikine",
+      "pos": [
+        4.0,
+        7.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 210.0,
+      "dest": "colobane",
+      "pos": [
+        2.5,
+        2.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 240.0,
+      "dest": "petersen",
+      "pos": [
+        2.0,
+        8.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 0.0,
+      "dest": "parcelles",
+      "pos": [
+        6.5,
+        6.5
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 0.0,
+      "dest": "pikine",
+      "pos": [
+        8.0,
+        9.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 180.0,
+      "dest": "colobane",
+      "pos": [
+        7.5,
+        10.0
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 270.0,
+      "dest": "petersen",
+      "pos": [
+        7.0,
+        1.0
+      ],
+      "type": "clando"
+    },
+    {
+      "angle": 180.0,
+      "dest": "parcelles",
+      "pos": [
+        1.0,
+        6.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 210.0,
+      "dest": "pikine",
+      "pos": [
+        4.0,
+        5.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 60.0,
+      "dest": "colobane",
+      "pos": [
+        8.0,
+        4.5
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 180.0,
+      "dest": "petersen",
+      "pos": [
+        1.5,
+        10.5
+      ],
+      "type": "car_rapide"
+    },
+    {
+      "angle": 270.0,
+      "dest": "parcelles",
+      "pos": [
+        8.5,
+        2.0
+      ],
+      "type": "taxi"
+    },
+    {
+      "angle": 180.0,
+      "dest": "pikine",
+      "pos": [
+        1.5,
+        3.5
+      ],
+      "type": "taxi"
+    }
+  ]
+}

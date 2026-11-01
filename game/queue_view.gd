@@ -4,6 +4,8 @@ extends Node3D
 
 const CUBE_SIZE: float = 0.38
 const CUBE_HEIGHT_OFFSET: float = 0.19
+const HEAD_MARKER_HEIGHT: float = 0.02
+const HEAD_MARKER_SCALE: float = 0.6
 
 var _layout: LevelLayout
 ## Destination de chaque passager, dans l'ordre de la file.
@@ -22,12 +24,24 @@ func setup(level: LevelData, layout: LevelLayout, palette: ViewPalette) -> void:
 	var totals: Dictionary[String, int] = level.passengers_by_dest()
 	for dest: String in totals:
 		_meshes[dest] = _build_multimesh(cube, totals[dest], layout, palette, dest)
+	_add_head_marker(palette)
 	_refresh()
 
 
 func advance(amount: int) -> void:
 	_head = mini(_head + amount, _passengers.size())
 	_refresh()
+
+
+## Flèche fixe vers la gare : montre quel passager embarque.
+func _add_head_marker(palette: ViewPalette) -> void:
+	var marker: MeshInstance3D = MeshInstance3D.new()
+	marker.mesh = palette.arrow_mesh
+	marker.material_override = palette.arrow_material
+	marker.position = _layout.head_marker_world() + Vector3.UP * HEAD_MARKER_HEIGHT
+	marker.rotation.y = -PI * 0.5
+	marker.scale = Vector3.ONE * HEAD_MARKER_SCALE
+	add_child(marker)
 
 
 func _build_multimesh(cube: BoxMesh, total: int, layout: LevelLayout, palette: ViewPalette, dest: String) -> MultiMesh:
