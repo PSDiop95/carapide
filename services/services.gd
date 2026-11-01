@@ -7,6 +7,9 @@ const PLAYTEST_CSV_PATH: String = "user://playtest.csv"
 var save: SaveService = FileSaveService.new(SAVE_PATH)
 var analytics: AnalyticsService = CsvAnalyticsService.new(PLAYTEST_CSV_PATH)
 var haptics: HapticsService = _make_haptics()
+var wallet: WalletService = SavedWalletService.new(save)
+var ads: AdsService = AdsService.new()
+var iap: IapService = IapService.new()
 
 
 static func _make_haptics() -> HapticsService:

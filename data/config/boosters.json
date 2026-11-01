@@ -1,0 +1,9 @@
+{
+  "boosters": {
+    "coxeur": { "price": 80, "unlock_level": 3, "gift": 3 },
+    "apprenti": { "price": 120, "unlock_level": 8, "gift": 3 }
+  },
+  "teaser_unlock_level": 13,
+  "victory_coins": 20,
+  "victory_ad_multiplier": 2
+}

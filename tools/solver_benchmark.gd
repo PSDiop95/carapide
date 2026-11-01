@@ -38,7 +38,7 @@ static func build_level(size: int, seed_value: int, interleaved: bool) -> LevelD
 	rng.seed = seed_value
 	var entries: Array = []
 	for id: int in size:
-		var column: int = id / ROWS
+		var column: int = floori(float(id) / float(ROWS))
 		var row: int = id % ROWS
 		var pos: Array = [1.5 + float(column) * CELL_X, 3.0 + float(row) * CELL_Y]
 		entries.append({"type": "taxi", "dest": DESTS[rng.randi_range(0, DESTS.size() - 1)], "pos": pos, "angle": 90})
@@ -56,7 +56,7 @@ static func build_level(size: int, seed_value: int, interleaved: bool) -> LevelD
 static func _play_order(size: int, rng: RandomNumberGenerator) -> PackedInt32Array:
 	var tops: Dictionary[int, int] = {}
 	for id: int in size:
-		tops[id / ROWS] = id
+		tops[floori(float(id) / float(ROWS))] = id
 	var order: PackedInt32Array = PackedInt32Array()
 	while not tops.is_empty():
 		var columns: Array[int] = tops.keys()
@@ -70,7 +70,7 @@ static func _play_order(size: int, rng: RandomNumberGenerator) -> PackedInt32Arr
 
 static func _queue_for(order: PackedInt32Array, entries: Array, interleaved: bool, rng: RandomNumberGenerator) -> Array:
 	var blocks: Array = []
-	var half: int = TAXI_CAPACITY / 2
+	var half: int = floori(float(TAXI_CAPACITY) * 0.5)
 	var pending: Array = []
 	for id: int in order:
 		var entry: Dictionary = entries[id]
