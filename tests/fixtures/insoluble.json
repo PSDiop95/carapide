@@ -1,0 +1,15 @@
+{
+  "id": 99,
+  "slots": 1,
+  "board": [8, 8],
+  "vehicles": [
+    {"type": "taxi", "dest": "colobane", "pos": [1, 2], "angle": 90},
+    {"type": "taxi", "dest": "yoff", "pos": [1, 6], "angle": 90}
+  ],
+  "queue": [
+    {"dest": "colobane", "count": 2},
+    {"dest": "yoff", "count": 2},
+    {"dest": "colobane", "count": 2},
+    {"dest": "yoff", "count": 2}
+  ]
+}
