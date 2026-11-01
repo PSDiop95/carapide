@@ -6,3 +6,4 @@ export_credentials.cfg
 .claude/
 # GDD privé : ne pas publier (dépôt public)
 docs/
+build/
